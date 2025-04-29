@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EducApp - Venta de Trabajos Educativos</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header>
+        <h1>EducApp</h1>
+        <nav>
+            <a href="{{ url_for('index') }}">Inicio</a>
+            <a href="{{ url_for('publish') }}">Publicar Material</a>
+            <a href="{{ url_for('browse') }}">Buscar Documentos</a>
+            <a href="{{ url_for('library') }}">Mi Biblioteca</a>
+            <a href="{{ url_for('dashboard') }}">Panel de Autor</a>
+        </nav>
+    </header>
+    
+    <main>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="flashes">
+                    {% for message in messages %}
+                        <p>{{ message }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        
+        {% block content %}{% endblock %}
+    </main>
+    
+    <footer>
+        <p>Sistema Distribuido de Venta de Trabajos Educativos - 2025</p>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,27 @@
+{% extends "layout.html" %}
+
+{% block content %}
+    <section class="hero">
+        <h2>Comparte y adquiere conocimiento</h2>
+        <p>Plataforma para la venta de trabajos educativos entre profesores y estudiantes</p>
+        
+        <div class="actions">
+            <a href="{{ url_for('publish') }}" class="button">Publicar Material</a>
+            <a href="{{ url_for('browse') }}" class="button">Buscar Documentos</a>
+        </div>
+    </section>
+    
+    <section class="featured">
+        <h3>Documentos destacados</h3>
+        <div class="documents-grid">
+            {% for doc in documents %}
+            <div class="document-card">
+                <h4>{{ doc.title }}</h4>
+                <p>Autor: {{ doc.author }}</p>
+                <p>Precio: ${{ doc.price }}</p>
+                <a href="{{ url_for('document', doc_id=doc.id) }}">Ver detalles</a>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+{% endblock %}

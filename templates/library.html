@@ -1,0 +1,52 @@
+{% extends "layout.html" %}
+
+{% block content %}
+    <h2>Mi Biblioteca</h2>
+    
+    {% if purchases %}
+        <div class="purchases-list">
+            {% for doc in purchases %}
+            <div class="purchase-item">
+                <div class="purchase-info">
+                    <h3>{{ doc.title }}</h3>
+                    <p>Autor: {{ doc.author }} | Comprado por: ${{ doc.price }}</p>
+                    <p>Fecha de compra: 15/04/2025</p> <!-- Fecha simulada -->
+                </div>
+                <div class="purchase-actions">
+                    <a href="{{ url_for('static', filename='uploads/' + doc.file) }}" class="download-button" download>Descargar</a>
+                    <a href="{{ url_for('document', doc_id=doc.id) }}" class="view-button">Ver Detalles</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-library">
+            <p>Aún no has comprado ningún documento.</p>
+            <a href="{{ url_for('browse') }}" class="browse-button">Explorar Documentos</a>
+        </div>
+    {% endif %}
+    
+    <div class="library-stats">
+        <h3>Estadísticas</h3>
+        <div class="stats-grid">
+            <div class="stat-item">
+                <p>Documentos comprados</p>
+                <p class="stat-value">{{ purchases|length }}</p>
+            </div>
+            <div class="stat-item">
+                <p>Total invertido</p>
+                <p class="stat-value">${{ "%.2f"|format(purchases|sum(attribute='price')) }}</p>
+            </div>
+            <div class="stat-item">
+                <p>Categoría favorita</p>
+                <p class="stat-value">
+                    {% if purchases %}
+                        {{ purchases|map(attribute='category')|most_common|first }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+{% endblock %}
