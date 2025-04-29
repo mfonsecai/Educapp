@@ -11,9 +11,7 @@ UPLOAD_FOLDER = 'static/uploads'
 ALLOWED_EXTENSIONS = {'pdf', 'doc', 'docx'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# Datos simulados
-# Datos simulados (deberían estar al inicio de tu archivo)
-# Datos simulados (deben estar definidos antes de las rutas)
+
 documents = [
     {'id': 1, 'title': 'Matemáticas Avanzadas', 'author': 'María', 'price': 10, 
      'category': 'Matemáticas Universitarias', 'file': 'math_advanced.pdf'},
@@ -153,8 +151,6 @@ def library():
     user_purchases = [doc for doc in documents if doc['id'] in users['erik']['purchases']]
     return render_template('library.html', purchases=user_purchases)
 
-# Elimina cualquier otra definición de @app.route('/dashboard') que tengas
-# y deja solo esta:
 
 @app.route('/dashboard')
 def dashboard():
