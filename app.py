@@ -20,7 +20,7 @@ UPLOAD_FOLDER = 'static/uploads'
 ALLOWED_EXTENSIONS = {'pdf', 'doc', 'docx'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# Decorador login_required con wraps
+# Decoradores
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -30,11 +30,41 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+def vendor_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if session.get('role') != 'vendedor':
+            flash('Acceso restringido a vendedores')
+            return redirect(url_for('index'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+def buyer_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if session.get('role') != 'comprador':
+            flash('Acceso restringido a compradores')
+            return redirect(url_for('index'))
+        return f(*args, **kwargs)
+    return decorated_function
+
 # Funciones auxiliares
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# Rutas
+def get_db_connection():
+    return psycopg2.connect(
+        host="localhost",
+        database="bdEducApp",
+        user="postgres",
+        password="@Uc19072004e".encode('ascii', 'ignore').decode('ascii'),
+        client_encoding='utf8'
+    )
+
+###############################################################################
+# Rutas Públicas
+###############################################################################
+
 @app.route('/')
 def index():
     documents = fetch_documents(3)
@@ -49,7 +79,6 @@ def register():
         email = request.form.get('email')
         role = request.form.get('role', 'comprador')
 
-        # Validaciones básicas
         if not all([usuarioId, username, password, email]):
             flash('Todos los campos son obligatorios', 'error')
             return redirect(url_for('register'))
@@ -63,7 +92,7 @@ def register():
             return redirect(url_for('login'))
         else:
             flash('Error en el registro', 'error')
-    return render_template('register.html')
+    return render_template('auth/register.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -73,13 +102,19 @@ def login():
         
         user = authenticate_user(email, password)
         if user:
-            session['user_id'] = user[0]
-            session['username'] = user[1]
-            session['role'] = user[2]
+            session['user_id'] = user[0]  # usuarioId
+            session['username'] = user[1]  # nombre
+            session['role'] = user[2]  # rol
+            session['email'] = email
             flash(f'Bienvenido {user[1]}!')
-            return redirect(url_for('index'))
+            
+            if user[2] == 'vendedor':
+                return redirect(url_for('vendor_dashboard'))
+            else:
+                return redirect(url_for('browse_documents'))
+                
         flash('Credenciales incorrectas')
-    return render_template('login.html')
+    return render_template('auth/login.html')
 
 @app.route('/logout')
 def logout():
@@ -87,55 +122,15 @@ def logout():
     flash('Has cerrado sesión correctamente')
     return redirect(url_for('index'))
 
-@app.route('/publish', methods=['GET', 'POST'])
-@login_required
-def publish_document():
-    if session.get('role') != 'vendedor':
-        flash('Solo los vendedores pueden publicar documentos')
-        return redirect(url_for('index'))
-        
-    if request.method == 'POST':
-        file = request.files.get('file')
-        if not file or file.filename == '':
-            flash('No se seleccionó ningún archivo')
-            return redirect(request.url)
-            
-        if allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(filepath)
-            
-            if os.path.getsize(filepath) > 10*1024*1024:
-                os.remove(filepath)
-                flash('El archivo es demasiado grande (máximo 10MB)')
-                return redirect(request.url)
-            
-            doc_id = str(uuid.uuid4()).replace('-', '')[:20]
-            insert_document(
-                doc_id=doc_id,
-                title=request.form.get('title'),
-                description=request.form.get('description', ''),
-                file_path=filename,
-                price=float(request.form.get('price')),
-                category=request.form.get('category'),
-                author_id=session['user_id'],
-                pages=request.form.get('pages', 0)
-            )
-            flash('Documento publicado con éxito!')
-            return redirect(url_for('index'))
-    
-    return render_template('publish.html')
-
 @app.route('/browse')
 def browse_documents():
     query = request.args.get('q', '')
     category = request.args.get('category', '')
     
     conn = get_db_connection()
-    conn.set_client_encoding('UTF8')  # 🔹 Asegura que los datos se interpreten correctamente
+    conn.set_client_encoding('UTF8')
     cur = conn.cursor()
     
-    # Consulta SQL con parámetros dinámicos para evitar SQL Injection
     sql = """
     SELECT d.documentoId, d.titulo, d.precio, d.categoria, d.rutaArchivo, u.nombre as autor
     FROM documentos d
@@ -153,7 +148,6 @@ def browse_documents():
 
     cur.execute(sql, params)
     
-    # Convertir los resultados en un formato adecuado para Flask
     documents = [
         {
             "id": row[0],
@@ -178,7 +172,7 @@ def view_document(doc_id):
         flash('Documento no encontrado')
         return redirect(url_for('browse_documents'))
 
-    author = get_user_by_id(doc[6])  # Verifica que doc[6] sea el ID del autor
+    author = get_user_by_id(doc[6])
     users = fetch_all_users()
     return render_template('document.html', document={
         'id': doc[0], 'title': doc[1], 'description': doc[2],
@@ -187,27 +181,43 @@ def view_document(doc_id):
         'verified': doc[7], 'upload_date': doc[8], 'pages': doc[9]
         }, users=users)
 
+###############################################################################
+# Rutas del Comprador
+###############################################################################
+
 @app.route('/payment/<doc_id>', methods=['GET', 'POST'])
 @login_required
+@buyer_required
 def process_payment(doc_id):
-    if session.get('role') != 'comprador':
-        flash('Solo los compradores pueden acceder a esta página')
-        return redirect(url_for('index'))
-    
     doc = get_document_by_id(doc_id)
     if not doc:
         flash('Documento no encontrado')
         return redirect(url_for('browse_documents'))
     
+    # Verificar si ya lo compró
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT 1 FROM bibliotecas 
+        WHERE usuarioId = %s AND documentoId = %s
+        """, (session['user_id'], doc_id))
+    if cur.fetchone():
+        flash('Ya has comprado este documento')
+        return redirect(url_for('view_library'))
+    cur.close()
+    conn.close()
+    
     if request.method == 'POST':
-        card_number = request.form.get('card_number')
-        if not card_number or len(card_number.replace(' ', '')) != 16:
-            flash('Número de tarjeta inválido')
+        # Simulación de validación de tarjeta
+        card_number = request.form.get('card_number', '').replace(' ', '')
+        if len(card_number) != 16 or not card_number.isdigit():
+            flash('Número de tarjeta inválido', 'error')
             return redirect(request.url)
         
         amount = doc[4]
-        royalty = amount * 0.7
+        royalty = amount * 0.7  # 70% para el autor
         
+        # Registrar transacción
         insert_transaction(
             doc_id=doc_id,
             buyer_id=session['user_id'],
@@ -216,31 +226,50 @@ def process_payment(doc_id):
             payment_method='tarjeta'
         )
         
+        # Actualizar saldo del autor
         update_user_balance(doc[6], fetch_user_balance(doc[6]) + royalty)
+        
+        # Registrar compra en biblioteca
         register_purchase(session['user_id'], doc_id)
         
-        flash('Compra exitosa! El documento ha sido añadido a tu biblioteca.')
-        return redirect(url_for('view_library'))
+        flash('Compra exitosa! El documento ha sido añadido a tu biblioteca.', 'success')
+        return redirect(url_for('view_document', doc_id=doc_id))
     
-    return render_template('payment.html', document={
-        'id': doc[0], 'title': doc[1], 'price': doc[4]
-    })
+    return render_template('payment.html', 
+        document={
+            'id': doc[0], 
+            'title': doc[1], 
+            'price': doc[4],
+            'author': get_user_by_id(doc[6])[1]
+        }
+    )
 
 @app.route('/library')
 @login_required
+@buyer_required
 def view_library():
-    if session.get('role') != 'comprador':
-        flash('Solo los compradores pueden acceder a la biblioteca')
-        return redirect(url_for('index'))
-    return render_template('library.html', purchases=fetch_library(session['user_id']))
+    purchases = fetch_library(session['user_id'])
+    
+    # Organizar por categoría
+    categories = {}
+    for doc in purchases:
+        if doc[2] not in categories:
+            categories[doc[2]] = []
+        categories[doc[2]].append(doc)
+    
+    return render_template('library.html', 
+        categories=categories,
+        total=len(purchases)
+    )
 
-@app.route('/dashboard')
+###############################################################################
+# Rutas del Vendedor
+###############################################################################
+
+@app.route('/vendor/dashboard')
 @login_required
-def author_dashboard():
-    if session.get('role') != 'vendedor':
-        flash('Solo los vendedores pueden acceder al panel de control')
-        return redirect(url_for('index'))
-        
+@vendor_required
+def vendor_dashboard():
     author_docs = get_author_documents(session['user_id'])
     total_earnings = 0
     formatted_docs = []
@@ -256,24 +285,108 @@ def author_dashboard():
         total_earnings += earnings
         formatted_docs.append({
             'id': doc[0], 'title': doc[1], 'price': doc[4],
-            'category': doc[5], 'earnings': earnings
+            'category': doc[5], 'earnings': earnings,
+            'sales': len(get_document_sales(doc[0]))  # Función ficticia - implementar
         })
     
-    return render_template('author_dashboard.html',
+    return render_template('vendor/dashboard.html',
         documents=formatted_docs,
         balance=fetch_user_balance(session['user_id']),
         total_earnings=total_earnings
     )
 
-# Función de conexión a la base de datos
-def get_db_connection():
-    return psycopg2.connect(
-        host="localhost",
-        database="bdEducApp",
-        user="postgres",
-        password = "@Uc19072004e".encode('ascii', 'ignore').decode('ascii'),  # Cambiar por tu contraseña
-        client_encoding='utf8'  # Fuerza la codificación UTF-8
+@app.route('/vendor/documents')
+@login_required
+@vendor_required
+def vendor_documents():
+    documents = get_author_documents(session['user_id'])
+    return render_template('vendor/documents.html', documents=documents)
+
+@app.route('/vendor/publish', methods=['GET', 'POST'])
+@login_required
+@vendor_required
+def publish_document():
+    if request.method == 'POST':
+        title = request.form.get('title')
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("SELECT 1 FROM documentos WHERE titulo = %s", (title,))
+        if cur.fetchone():
+            flash('Ya existe un documento con ese título. Por favor elige otro.', 'error')
+            return redirect(request.url)
+        
+        file = request.files.get('file')
+        if not file or file.filename == '':
+            flash('No se seleccionó ningún archivo', 'error')
+            return redirect(request.url)
+            
+        if not allowed_file(file.filename):
+            flash('Tipo de archivo no permitido', 'error')
+            return redirect(request.url)
+            
+        filename = secure_filename(file.filename)
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(filepath)
+        
+        if os.path.getsize(filepath) > 10*1024*1024:
+            os.remove(filepath)
+            flash('El archivo es demasiado grande (máximo 10MB)', 'error')
+            return redirect(request.url)
+        
+        pages = request.form.get('pages', 0)
+        try:
+            pages = int(pages)
+        except:
+            pages = 0
+            
+        price = float(request.form.get('price', 0))
+        if price < 1 or price > 100:
+            flash('El precio debe estar entre $1 y $100', 'error')
+            return redirect(request.url)
+        
+        doc_id = str(uuid.uuid4()).replace('-', '')[:20]
+        insert_document(
+            doc_id=doc_id,
+            title=title,
+            description=request.form.get('description', ''),
+            file_path=filename,
+            price=price,
+            category=request.form.get('category'),
+            author_id=session['user_id'],
+            pages=pages
+        )
+        
+        flash('Documento publicado con éxito!', 'success')
+        return redirect(url_for('vendor_dashboard'))
+    
+    return render_template('vendor/publish.html', 
+        categories=['Matemáticas', 'Física', 'Química', 'Literatura', 'Historia']
     )
+
+@app.route('/vendor/withdraw', methods=['GET', 'POST'])
+@login_required
+@vendor_required
+def withdraw_funds():
+    balance = fetch_user_balance(session['user_id'])
+    
+    if request.method == 'POST':
+        amount = float(request.form.get('amount', 0))
+        
+        if amount <= 0:
+            flash('El monto debe ser positivo', 'error')
+        elif amount > balance:
+            flash('Fondos insuficientes', 'error')
+        else:
+            # Registrar retiro
+            update_user_balance(session['user_id'], balance - amount)
+            flash(f'Retiro de ${amount:.2f} procesado exitosamente', 'success')
+            return redirect(url_for('vendor_dashboard'))
+    
+    return render_template('vendor/withdraw.html', balance=balance)
+
+###############################################################################
+# Inicialización
+###############################################################################
 
 if __name__ == '__main__':
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)

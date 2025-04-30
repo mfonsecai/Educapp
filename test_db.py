@@ -2,7 +2,7 @@ import psycopg2
 try:
     conn = psycopg2.connect(
         host="localhost",
-        database="BdEducApp",
+        database="bdeducapp",
         user="postgres",
         password="1234",
         client_encoding='utf8'

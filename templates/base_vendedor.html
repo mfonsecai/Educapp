@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EducApp - {% block title %}Panel Vendedor{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='/vendor.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="educapp-vendedor-container">
+        <aside class="educapp-sidebar">
+            <div class="educapp-brand">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="EducApp Logo">
+                <h2>Panel del Vendedor</h2>
+            </div>
+            
+            <nav class="educapp-nav">
+                <ul>
+                    <li class="{% if active_page == 'dashboard' %}active{% endif %}">
+                        <a href="{{ url_for('vendor_dashboard') }}">
+                            <i class="fas fa-tachometer-alt"></i> Area de trabajo
+                        </a>
+                    </li>
+                    <li class="{% if active_page == 'documents' %}active{% endif %}">
+                        <a href="{{ url_for('vendor_documents') }}">
+                            <i class="fas fa-file-alt"></i> Mis Documentos
+                        </a>
+                    </li>
+                    <li class="{% if active_page == 'publish' %}active{% endif %}">
+                        <a href="{{ url_for('publish_document') }}">
+                            <i class="fas fa-plus-circle"></i> Publicar Nuevo
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            
+            <div class="educapp-user-section">
+                <div class="educapp-user-info">
+                    <div class="educapp-user-avatar">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    <div class="educapp-user-details">
+                        <strong>{{ session['username'] }}</strong>
+                        <small>{{ session['email'] }}</small>
+                    </div>
+                </div>
+                <a href="{{ url_for('logout') }}" class="educapp-logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                </a>
+            </div>
+        </aside>
+
+        <main class="educapp-main-content">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="educapp-alert educapp-alert-{{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/vendor.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

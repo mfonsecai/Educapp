@@ -1,0 +1,79 @@
+{% extends "base_vendedor.html" %}
+{% set active_page = 'publish' %}
+
+{% block content %}
+<div class="educapp-panel">
+    <div class="educapp-form-container">
+        <h3><i class="fas fa-plus-circle"></i> {{ 'Editar Documento' if edit_mode else 'Publicar Nuevo Documento' }}</h3>
+        
+        <form method="POST" enctype="multipart/form-data" class="educapp-form">
+            <div class="educapp-form-group">
+                <label for="title">Título del Documento*</label>
+                <input type="text" id="title" name="title" value="{{ document.title if document }}" required>
+            </div>
+            
+            <div class="educapp-form-group">
+                <label for="category">Categoría*</label>
+                <select id="category" name="category" required>
+                    <option value="">Seleccione una categoría</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat }}" {{ 'selected' if document and document.category == cat }}>
+                        {{ cat }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="educapp-form-group">
+                <label for="price">Precio (USD)*</label>
+                <input type="number" step="0.01" id="price" name="price" min="1" max="100" 
+                       value="{{ document.price if document else '' }}" required>
+                <small class="educapp-hint">Entre $1 y $100</small>
+            </div>
+            
+            <div class="educapp-form-group">
+                <label for="description">Descripción*</label>
+                <textarea id="description" name="description" rows="5" required>{{ document.description if document }}</textarea>
+            </div>
+            
+            <div class="educapp-form-group">
+                <label for="document_file">Archivo del Documento (PDF)*</label>
+                <input type="file" id="document_file" name="document_file" accept=".pdf" {{ 'required' if not document }}>
+                {% if document %}
+                <small class="educapp-hint">Actual: {{ document.file_path }}</small>
+                {% endif %}
+            </div>
+            
+            <div class="educapp-form-group">
+                <label for="preview_image">Imagen de Vista Previa (Opcional)</label>
+                <input type="file" id="preview_image" name="preview_image" accept="image/*">
+                {% if document and document.preview_image %}
+                <small class="educapp-hint">Actual: {{ document.preview_image }}</small>
+                {% endif %}
+            </div>
+            
+            <div class="educapp-form-group">
+                <label for="pages">Número de Páginas*</label>
+                <input type="number" id="pages" name="pages" min="1" 
+                       value="{{ document.pages if document else '' }}" required>
+            </div>
+            
+            <div class="educapp-form-group">
+                <label>
+                    <input type="checkbox" name="published" {{ 'checked' if not document or document.published }}>
+                    Publicar inmediatamente
+                </label>
+            </div>
+            
+            <div class="educapp-form-actions">
+                <button type="submit" class="educapp-submit-btn">
+                    <i class="fas fa-save"></i> {{ 'Actualizar' if edit_mode else 'Publicar' }}
+                </button>
+                <a href="{{ url_for('vendor_documents') }}" class="educapp-cancel-btn">
+                    Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

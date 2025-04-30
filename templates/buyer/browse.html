@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h2>Explorar Documentos</h2>
+    
+    <form class="mb-4">
+        <div class="row">
+            <div class="col-md-4">
+                <input type="text" name="q" class="form-control" placeholder="Buscar..." value="{{ query }}">
+            </div>
+            <div class="col-md-3">
+                <select name="category" class="form-control">
+                    <option value="">Todas las categorías</option>
+                    {% for cat in ['Matemáticas', 'Física', 'Química', 'Literatura', 'Historia'] %}
+                    <option {% if category==cat %}selected{% endif %}>{{ cat }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <input type="number" name="min_price" class="form-control" placeholder="Mínimo" value="{{ min_price }}">
+            </div>
+            <div class="col-md-2">
+                <input type="number" name="max_price" class="form-control" placeholder="Máximo" value="{{ max_price }}">
+            </div>
+            <div class="col-md-1">
+                <button type="submit" class="btn btn-primary">Filtrar</button>
+            </div>
+        </div>
+    </form>
+    
+    <div class="row">
+        {% for doc in documents %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{{ doc.title }}</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">{{ doc.category }} - ${{ "%.2f"|format(doc.price) }}</h6>
+                    <p class="card-text">{{ doc.preview }}</p>
+                    <p class="text-muted">{{ doc.sales }} ventas</p>
+                </div>
+                <div class="card-footer">
+                    <a href="{{ url_for('view_document', doc_id=doc.id) }}" class="btn btn-primary">Ver Detalles</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends "base_vendedor.html" %}
+{% set active_page = 'documents' %}
+
+{% block content %}
+<div class="educapp-panel">
+    <div class="educapp-documents-section">
+        <div class="educapp-section-header">
+            <h3><i class="fas fa-file-alt"></i> Todos mis Documentos</h3>
+            <a href="{{ url_for('publish_document') }}" class="educapp-action-btn">
+                <i class="fas fa-plus"></i> Publicar Nuevo
+            </a>
+        </div>
+        
+        <div class="educapp-documents-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Título</th>
+                        <th>Categoría</th>
+                        <th>Precio</th>
+                        <th>Estado</th>
+                        <th>Ventas</th>
+                        <th>Ganancias</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for doc in documents %}
+                    <tr>
+                        <td><a href="{{ url_for('view_document', doc_id=doc.id) }}">{{ doc.title }}</a></td>
+                        <td><span class="educapp-category-badge">{{ doc.category }}</span></td>
+                        <td>${{ "%.2f"|format(doc.price) }}</td>
+                        <td>
+                            <span class="educapp-status-badge {{ 'published' if doc.published else 'draft' }}">
+                                {{ 'Publicado' if doc.published else 'Borrador' }}
+                            </span>
+                        </td>
+                        <td>{{ doc.sales }}</td>
+                        <td class="educapp-earnings">${{ "%.2f"|format(doc.earnings) }}</td>
+                        <td class="educapp-actions">
+                            <a href="{{ url_for('edit_document', doc_id=doc.id) }}" class="educapp-btn-small" title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{{ url_for('toggle_document', doc_id=doc.id) }}" class="educapp-btn-small {{ 'success' if not doc.published else 'warning' }}" title="{{ 'Publicar' if not doc.published else 'Despublicar' }}">
+                                <i class="fas {{ 'fa-eye' if not doc.published else 'fa-eye-slash' }}"></i>
+                            </a>
+                            <a href="{{ url_for('delete_document', doc_id=doc.id) }}" class="educapp-btn-small danger" title="Eliminar" onclick="return confirm('¿Estás seguro de eliminar este documento?')">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="educapp-no-documents">
+                            <i class="fas fa-info-circle"></i> Aún no has publicado documentos
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
