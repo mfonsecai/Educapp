@@ -1,34 +1,75 @@
 <!DOCTYPE html>
-{% extends "layout.html" %}
-
-{% block content %}
-<div class="register-form">
-    <h2>Registro de usuario</h2>
-    <form method="POST">
-        <div class="form-group">
-            <label for="username">Número de identificación:</label>
-            <input type="text" id="usuarioId" name="usuarioId" required>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EducApp - Registro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="static/style.css">
+</head>
+<body>
+    <div class="educapp-container">
+        <div class="educapp-register-card">
+            <div class="educapp-header">
+                <img src="static\logo.png" alt="EducApp Logo" class="educapp-logo">
+                <h2>Únete a EducApp</h2>
+                <p>Comienza a comprar o vender trabajos educativos hoy mismo</p>
+            </div>
+            
+            <form method="POST" class="educapp-form">
+                <div class="educapp-form-group">
+                    <label for="usuarioId">Número de identificación</label>
+                    <input type="text" id="usuarioId" name="usuarioId" required placeholder="Ej: 123456789">
+                    <i class="fas fa-id-card"></i>
+                </div>
+                
+                <div class="educapp-form-group">
+                    <label for="username">Nombre de usuario</label>
+                    <input type="text" id="username" name="username" required placeholder="Crea tu nombre de usuario">
+                    <i class="fas fa-user"></i>
+                </div>
+                
+                <div class="educapp-form-group">
+                    <label for="email">Correo electrónico</label>
+                    <input type="email" id="email" name="email" required placeholder="tucorreo@ejemplo.com">
+                    <i class="fas fa-envelope"></i>
+                </div>
+                
+                <div class="educapp-form-group">
+                    <label for="password">Contraseña</label>
+                    <input type="password" id="password" name="password" required placeholder="Mínimo 8 caracteres">
+                    <i class="fas fa-lock"></i>
+                </div>
+                
+                <div class="educapp-form-group">
+                    <label for="role">¿Qué deseas hacer en EducApp?</label>
+                    <div class="educapp-role-selector">
+                        <label class="educapp-role-option">
+                            <input type="radio" name="role" value="comprador" checked>
+                            <div class="educapp-role-card">
+                                <i class="fas fa-shopping-cart"></i>
+                                <span>Comprar trabajos</span>
+                            </div>
+                        </label>
+                        <label class="educapp-role-option">
+                            <input type="radio" name="role" value="vendedor">
+                            <div class="educapp-role-card">
+                                <i class="fas fa-graduation-cap"></i>
+                                <span>Vender mis trabajos</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                
+                <button type="submit" class="educapp-submit-btn">
+                    Registrarse <i class="fas fa-arrow-right"></i>
+                </button>
+                
+                <div class="educapp-login-link">
+                    ¿Ya tienes una cuenta? <a href="{{ url_for('login') }}">Inicia sesión aquí</a>
+                </div>
+            </form>
         </div>
-        <div class="form-group">
-            <label for="username">Nombre de usuario:</label>
-            <input type="text" id="username" name="username" required>
-        </div>
-        <div class="form-group">
-            <label for="password">Contraseña:</label>
-            <input type="password" id="password" name="password" required>
-        </div>
-        <div class="form-group">
-            <label for="email">Correo electrónico:</label>
-            <input type="email" id="email" name="email" required>
-        </div>
-        <div class="form-group">
-            <label for="role">Tipo de usuario:</label>
-            <select id="role" name="role">
-                <option value="comprador">Comprador</option>
-                <option value="vendedor">Vendedor</option>
-            </select>
-        </div>
-        <button type="submit">Registrarse</button>
-    </form>
-</div>
-{% endblock %}
+    </div>
+</body>
+</html>

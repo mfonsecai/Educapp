@@ -4,7 +4,7 @@ try:
         host="localhost",
         database="BdEducApp",
         user="postgres",
-        password="@Uc19072004e",
+        password="1234",
         client_encoding='utf8'
     )
     print("¡Conexión exitosa!")

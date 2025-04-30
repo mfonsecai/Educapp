@@ -10,9 +10,9 @@ load_dotenv()  # Carga las variables del archivo .env
 def get_db_connection():
     return psycopg2.connect(
         host="localhost",
-        database="BdEducApp",
+        database="bdeducapp",
         user="postgres",
-        password="@Uc19072004e",  # Mantén la contraseña sin modificar
+        password="1234",  # Mantén la contraseña sin modificar
         options="-c client_encoding=UTF8"  # Fuerza la codificación UTF-8 correctamente
     )
 
