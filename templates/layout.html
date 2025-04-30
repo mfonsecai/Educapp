@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EducApp - Venta de Trabajos Educativos</title>
+    <title>EducApp - Venta de trabajos educativos</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
@@ -11,10 +11,15 @@
         <h1>EducApp</h1>
         <nav>
             <a href="{{ url_for('index') }}">Inicio</a>
-            <a href="{{ url_for('publish') }}">Publicar Material</a>
-            <a href="{{ url_for('browse') }}">Buscar Documentos</a>
-            <a href="{{ url_for('library') }}">Mi Biblioteca</a>
-            <a href="{{ url_for('dashboard') }}">Panel de Autor</a>
+            <a href="{{ url_for('publish_document') }}">Publicar material</a>
+            <a href="{{ url_for('browse_documents') }}">Buscar documentos</a>
+            <a href="{{ url_for('view_library') }}">Mi biblioteca</a>
+            <a href="{{ url_for('author_dashboard') }}">Panel de autor</a>
+            {% if 'user_id' in session %}
+            <a href="{{ url_for('logout') }}">Cerrar sesión</a>
+            {% else %}
+            <a href="{{ url_for('login') }}">Iniciar sesión</a>
+            {% endif %}
         </nav>
     </header>
     

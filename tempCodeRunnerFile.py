@@ -1,0 +1,1 @@
+password = "@Uc19072004e".encode('ascii', 'ignore').decode('ascii'),  # Cambiar por tu contraseña

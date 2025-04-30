@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="register-form">
+    <h2>Registro de usuario</h2>
+    <form method="POST">
+        <div class="form-group">
+            <label for="username">Número de identificación:</label>
+            <input type="text" id="usuarioId" name="usuarioId" required>
+        </div>
+        <div class="form-group">
+            <label for="username">Nombre de usuario:</label>
+            <input type="text" id="username" name="username" required>
+        </div>
+        <div class="form-group">
+            <label for="password">Contraseña:</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+        <div class="form-group">
+            <label for="email">Correo electrónico:</label>
+            <input type="email" id="email" name="email" required>
+        </div>
+        <div class="form-group">
+            <label for="role">Tipo de usuario:</label>
+            <select id="role" name="role">
+                <option value="comprador">Comprador</option>
+                <option value="vendedor">Vendedor</option>
+            </select>
+        </div>
+        <button type="submit">Registrarse</button>
+    </form>
+</div>
+{% endblock %}

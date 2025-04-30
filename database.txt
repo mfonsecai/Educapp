@@ -1,0 +1,86 @@
+-- Crear la base de datos
+CREATE DATABASE BdEducApp;
+
+- Tabla de usuarios
+CREATE TABLE usuarios (
+    usuarioId VARCHAR(20) PRIMARY KEY, -- ID único del usuario
+    nombre VARCHAR(50) UNIQUE NOT NULL, -- Nombre del usuario (único)
+    contrasena VARCHAR(256) NOT NULL, -- Contraseña (se almacena con hash)
+    correo VARCHAR(100) UNIQUE NOT NULL, -- Correo electrónico único
+    rol VARCHAR(10) CHECK (rol IN ('vendedor', 'comprador')) NOT NULL, -- Roles permitidos
+    saldo DECIMAL(10, 2) DEFAULT 0.00 CHECK (saldo >= 0), -- Saldo del usuario (no negativo)
+    fechaCreacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP -- Fecha de registro
+);
+
+-- Tabla de documentos
+CREATE TABLE documentos (
+    documentoId VARCHAR(20) PRIMARY KEY, -- ID único del documento
+    titulo VARCHAR(100) NOT NULL, -- Título obligatorio
+    descripcion TEXT, -- Descripción opcional
+    rutaArchivo VARCHAR(255) NOT NULL, -- Ruta al archivo
+    precio DECIMAL(10, 2) NOT NULL CHECK (precio > 0), -- Precio mínimo mayor a 0
+    categoria VARCHAR(50) NOT NULL, -- Categoría del documento
+    autorId VARCHAR(20) REFERENCES usuarios(usuarioId) NOT NULL, -- Relación con el autor
+    verificado BOOLEAN DEFAULT FALSE, -- Estado de verificación
+    fechaSubida TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Fecha de subida
+    paginas INTEGER -- Número de páginas
+);
+
+-- Tabla de transacciones
+CREATE TABLE transacciones (
+    transaccionId VARCHAR(20) PRIMARY KEY, -- ID único de la transacción
+    documentoId VARCHAR(20) REFERENCES documentos(documentoId) NOT NULL, -- Documento adquirido
+    compradorId VARCHAR(20) REFERENCES usuarios(usuarioId) NOT NULL, -- Usuario que compró
+    monto DECIMAL(10, 2) NOT NULL CHECK (monto > 0), -- Monto mínimo mayor a 0
+    regalia DECIMAL(10, 2) NOT NULL, -- Regalía (70% del monto)
+    fechaTransaccion TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Fecha de la transacción
+    metodoPago VARCHAR(20) NOT NULL -- Método de pago utilizado
+);
+
+-- Tabla de bibliotecas (documentos comprados)
+CREATE TABLE bibliotecas (
+    usuarioId VARCHAR(20) REFERENCES usuarios(usuarioId) NOT NULL, -- Dueño de la biblioteca
+    documentoId VARCHAR(20) REFERENCES documentos(documentoId) NOT NULL, -- Documento comprado
+    fechaCompra TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Fecha de compra
+    PRIMARY KEY (usuarioId, documentoId) -- No se permite comprar el mismo documento varias veces
+);
+
+-- Tabla de documentos vendidos
+CREATE TABLE documentos_vendidos (
+    documentovendId VARCHAR(20) PRIMARY KEY, -- ID único del documento vendido
+    titulo VARCHAR(100) NOT NULL, -- Título
+    descripcion TEXT, -- Descripción
+    rutaArchivo VARCHAR(255) NOT NULL, -- Ruta del archivo
+    precio DECIMAL(10, 2) NOT NULL CHECK (precio > 0), -- Precio mayor a 0
+    categoria VARCHAR(50) NOT NULL, -- Categoría
+    autorId VARCHAR(20) REFERENCES usuarios(usuarioId) NOT NULL, -- Autor del documento
+    compradorId VARCHAR(20) REFERENCES usuarios(usuarioId) NOT NULL, -- Usuario que compró
+    fechaCompra TIMESTAMP DEFAULT CURRENT_TIMESTAMP -- Fecha de compra
+);
+
+-- Permisos en PostgreSQL
+-- Crear roles
+CREATE ROLE vendedor NOINHERIT; -- Usuarios que publican documentos
+CREATE ROLE comprador NOINHERIT; -- Usuarios que compran documentos
+
+-- Asignar propietarios
+ALTER TABLE usuarios OWNER TO vendedor;
+ALTER TABLE documentos OWNER TO vendedor;
+ALTER TABLE transacciones OWNER TO vendedor;
+ALTER TABLE bibliotecas OWNER TO vendedor;
+ALTER TABLE documentos_vendidos OWNER TO vendedor;
+
+-- Configuración de permisos
+GRANT SELECT, INSERT, UPDATE ON usuarios TO vendedor, comprador;  -- Ambos roles pueden leer y modificar usuarios
+GRANT SELECT, INSERT, UPDATE ON documentos TO vendedor; -- Solo los vendedores pueden modificar documentos
+GRANT SELECT ON documentos TO comprador; -- Compradores solo pueden ver los documentos disponibles
+GRANT INSERT ON transacciones TO comprador; -- Compradores pueden registrar transacciones
+GRANT SELECT ON transacciones TO vendedor, comprador; -- Ambos pueden ver transacciones
+GRANT SELECT, INSERT ON bibliotecas TO comprador; -- Los compradores pueden agregar documentos comprados
+GRANT SELECT ON documentos_vendidos TO vendedor, comprador; -- Ambos pueden ver documentos vendidos
+
+-- Revocar permisos públicos (nadie accede sin rol)
+REVOKE ALL ON usuarios, documentos, transacciones, bibliotecas, documentos_vendidos FROM PUBLIC;
+
+-- Permisos para secuencias (uso de auto-incremento)
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO vendedor, comprador;

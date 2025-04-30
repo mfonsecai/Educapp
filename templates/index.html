@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 {% extends "layout.html" %}
 
 {% block content %}
@@ -6,8 +7,8 @@
         <p>Plataforma para la venta de trabajos educativos entre profesores y estudiantes</p>
         
         <div class="actions">
-            <a href="{{ url_for('publish') }}" class="button">Publicar Material</a>
-            <a href="{{ url_for('browse') }}" class="button">Buscar Documentos</a>
+            <a href="{{ url_for('publish_document') }}" class="button">Publicar Material</a>
+            <a href="{{ url_for('browse_documents') }}" class="button">Buscar Documentos</a>
         </div>
     </section>
     
@@ -19,7 +20,7 @@
                 <h4>{{ doc.title }}</h4>
                 <p>Autor: {{ doc.author }}</p>
                 <p>Precio: ${{ doc.price }}</p>
-                <a href="{{ url_for('document', doc_id=doc.id) }}">Ver detalles</a>
+                <a href="{{ url_for('view_document', doc_id=doc.id) }}">Ver detalles</a>
             </div>
             {% endfor %}
         </div>

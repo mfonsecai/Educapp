@@ -1,7 +1,8 @@
+<!DOCTYPE html>
 {% extends "layout.html" %}
 
 {% block content %}
-    <h2>Mi Biblioteca</h2>
+    <h2>Mi biblioteca</h2>
     
     {% if purchases %}
         <div class="purchases-list">
@@ -14,7 +15,7 @@
                 </div>
                 <div class="purchase-actions">
                     <a href="{{ url_for('static', filename='uploads/' + doc.file) }}" class="download-button" download>Descargar</a>
-                    <a href="{{ url_for('document', doc_id=doc.id) }}" class="view-button">Ver Detalles</a>
+                    <a href="{{ url_for('view_document', doc_id=doc.id) }}" class="view-button">Ver detalles</a>
                 </div>
             </div>
             {% endfor %}
@@ -22,7 +23,7 @@
     {% else %}
         <div class="empty-library">
             <p>Aún no has comprado ningún documento.</p>
-            <a href="{{ url_for('browse') }}" class="browse-button">Explorar Documentos</a>
+            <a href="{{ url_for('browse_documents') }}" class="browse-button">Explorar documentos</a>
         </div>
     {% endif %}
     

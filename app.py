@@ -1,170 +1,280 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, session
+import psycopg2
 from werkzeug.utils import secure_filename
-from collections import Counter  # Añade este import
 import os
+import uuid
+from functools import wraps
+from collections import Counter
+from db import (
+    fetch_all_users, fetch_documents, insert_document, fetch_library,
+    insert_transaction, fetch_user_balance, update_user_balance,
+    get_document_by_id, get_author_documents, register_purchase,
+    get_user_by_id, authenticate_user, register_user, user_exists
+)
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'
 
-# Configuración básica
+# Configuración
 UPLOAD_FOLDER = 'static/uploads'
 ALLOWED_EXTENSIONS = {'pdf', 'doc', 'docx'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# Datos simulados
-# Datos simulados (deberían estar al inicio de tu archivo)
-# Datos simulados (deben estar definidos antes de las rutas)
-documents = [
-    {'id': 1, 'title': 'Matemáticas Avanzadas', 'author': 'María', 'price': 10, 
-     'category': 'Matemáticas Universitarias', 'file': 'math_advanced.pdf'},
-    {'id': 2, 'title': 'Física Cuántica', 'author': 'Carlos', 'price': 15, 
-     'category': 'Física', 'file': 'quantum_physics.pdf'},
-    {'id': 3, 'title': 'Introducción a Python', 'author': 'Ana', 'price': 8, 
-     'category': 'Programación', 'file': 'python_intro.pdf'}
-]
+# Decorador login_required con wraps
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            flash('Debes iniciar sesión para acceder a esta página')
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
 
-users = {
-    'maria': {'name': 'María', 'role': 'author', 'balance': 0},
-    'erik': {'name': 'Erik', 'role': 'student', 'purchases': []}
-}
 # Funciones auxiliares
 def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# Rutas principales
+# Rutas
 @app.route('/')
 def index():
-    # Pasa la variable 'documents' al template index.html
-    return render_template('index.html', documents=documents[:3])  # Solo mostramos 3 documentos en la página principal
-@app.route('/withdraw', methods=['POST'])
-def withdraw():
-    amount = float(request.form.get('amount'))
-    if amount <= users['maria']['balance']:
-        users['maria']['balance'] -= amount
-        flash(f'Retiro exitoso por ${amount:.2f}')
-    else:
-        flash('Fondos insuficientes para este retiro')
-    return redirect(url_for('dashboard'))
+    documents = fetch_documents(3)
+    return render_template('index.html', documents=documents)
 
-# Función para el filtro 'most_common' usado en library.html
-@app.template_filter('most_common')
-def most_common_filter(items):
-    from collections import Counter
-    if not items:
-        return None
-    counter = Counter(items)
-    return counter.most_common(1)[0][0]
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        usuarioId = request.form.get('usuarioId')
+        username = request.form.get('username')
+        password = request.form.get('password')
+        email = request.form.get('email')
+        role = request.form.get('role', 'comprador')
 
+        # Validaciones básicas
+        if not all([usuarioId, username, password, email]):
+            flash('Todos los campos son obligatorios', 'error')
+            return redirect(url_for('register'))
+
+        if user_exists(usuarioId):
+            flash('El usuario ya existe', 'error')
+            return redirect(url_for('register'))
+
+        if register_user(usuarioId, username, password, email, role):
+            flash('Registro exitoso! Por favor inicia sesión', 'success')
+            return redirect(url_for('login'))
+        else:
+            flash('Error en el registro', 'error')
+    return render_template('register.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
+        
+        user = authenticate_user(email, password)
+        if user:
+            session['user_id'] = user[0]
+            session['username'] = user[1]
+            session['role'] = user[2]
+            flash(f'Bienvenido {user[1]}!')
+            return redirect(url_for('index'))
+        flash('Credenciales incorrectas')
+    return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    flash('Has cerrado sesión correctamente')
+    return redirect(url_for('index'))
 
 @app.route('/publish', methods=['GET', 'POST'])
-def publish():
+@login_required
+def publish_document():
+    if session.get('role') != 'vendedor':
+        flash('Solo los vendedores pueden publicar documentos')
+        return redirect(url_for('index'))
+        
     if request.method == 'POST':
-        # T₁₁: Subida del documento
-        if 'file' not in request.files:
+        file = request.files.get('file')
+        if not file or file.filename == '':
             flash('No se seleccionó ningún archivo')
             return redirect(request.url)
-        
-        file = request.files['file']
-        if file.filename == '':
-            flash('No se seleccionó ningún archivo')
-            return redirect(request.url)
-        
-        if file and allowed_file(file.filename):
+            
+        if allowed_file(file.filename):
             filename = secure_filename(file.filename)
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(filepath)
             
-            # T₁₂: Verificación simulada (en realidad aquí iría la lógica de verificación)
-            if os.path.getsize(filepath) > 10*1024*1024:  # 10MB
+            if os.path.getsize(filepath) > 10*1024*1024:
                 os.remove(filepath)
                 flash('El archivo es demasiado grande (máximo 10MB)')
                 return redirect(request.url)
             
-            # T₁₃: Configuración de venta
-            title = request.form.get('title')
-            price = float(request.form.get('price'))
-            category = request.form.get('category')
-            
-            new_doc = {
-                'id': len(documents) + 1,
-                'title': title,
-                'author': 'María',  # En realidad sería el usuario actual
-                'price': price,
-                'category': category,
-                'file': filename
-            }
-            documents.append(new_doc)
-            
+            doc_id = str(uuid.uuid4()).replace('-', '')[:20]
+            insert_document(
+                doc_id=doc_id,
+                title=request.form.get('title'),
+                description=request.form.get('description', ''),
+                file_path=filename,
+                price=float(request.form.get('price')),
+                category=request.form.get('category'),
+                author_id=session['user_id'],
+                pages=request.form.get('pages', 0)
+            )
             flash('Documento publicado con éxito!')
             return redirect(url_for('index'))
     
     return render_template('publish.html')
 
 @app.route('/browse')
-def browse():
+def browse_documents():
     query = request.args.get('q', '')
     category = request.args.get('category', '')
     
-    filtered_docs = documents
-    if query:
-        filtered_docs = [doc for doc in filtered_docs if query.lower() in doc['title'].lower()]
-    if category:
-        filtered_docs = [doc for doc in filtered_docs if category == doc['category']]
+    conn = get_db_connection()
+    conn.set_client_encoding('UTF8')  # 🔹 Asegura que los datos se interpreten correctamente
+    cur = conn.cursor()
     
-    return render_template('browse.html', documents=filtered_docs, query=query)
+    # Consulta SQL con parámetros dinámicos para evitar SQL Injection
+    sql = """
+    SELECT d.documentoId, d.titulo, d.precio, d.categoria, d.rutaArchivo, u.nombre as autor
+    FROM documentos d
+    JOIN usuarios u ON d.autorId = u.usuarioId
+    WHERE 1=1
+    """
+    params = []
 
-@app.route('/document/<int:doc_id>')
-def document(doc_id):
-    doc = next((doc for doc in documents if doc['id'] == doc_id), None)
+    if query:
+        sql += " AND d.titulo ILIKE %s"
+        params.append(f'%{query}%')
+    if category:
+        sql += " AND d.categoria = %s"
+        params.append(category)
+
+    cur.execute(sql, params)
+    
+    # Convertir los resultados en un formato adecuado para Flask
+    documents = [
+        {
+            "id": row[0],
+            "title": row[1],
+            "price": row[2],
+            "category": row[3],
+            "file_path": row[4],
+            "author": row[5]
+        }
+        for row in cur.fetchall()
+    ]
+    
+    cur.close()
+    conn.close()
+    
+    return render_template('browse.html', documents=documents, query=query, category=category)
+
+@app.route('/document/<doc_id>')
+def view_document(doc_id):
+    doc = get_document_by_id(doc_id)
     if not doc:
         flash('Documento no encontrado')
-        return redirect(url_for('browse'))
-    return render_template('document.html', document=doc)
+        return redirect(url_for('browse_documents'))
 
-@app.route('/payment/<int:doc_id>', methods=['GET', 'POST'])
-def payment(doc_id):
-    doc = next((doc for doc in documents if doc['id'] == doc_id), None)
+    author = get_user_by_id(doc[6])  # Verifica que doc[6] sea el ID del autor
+    users = fetch_all_users()
+    return render_template('document.html', document={
+        'id': doc[0], 'title': doc[1], 'description': doc[2],
+        'file': doc[3], 'price': doc[4], 'category': doc[5],
+        'author': author[1] if author else 'Desconocido',
+        'verified': doc[7], 'upload_date': doc[8], 'pages': doc[9]
+        }, users=users)
+
+@app.route('/payment/<doc_id>', methods=['GET', 'POST'])
+@login_required
+def process_payment(doc_id):
+    if session.get('role') != 'comprador':
+        flash('Solo los compradores pueden acceder a esta página')
+        return redirect(url_for('index'))
+    
+    doc = get_document_by_id(doc_id)
     if not doc:
         flash('Documento no encontrado')
-        return redirect(url_for('browse'))
+        return redirect(url_for('browse_documents'))
     
     if request.method == 'POST':
-        # Procesamiento de pago simulado
         card_number = request.form.get('card_number')
         if not card_number or len(card_number.replace(' ', '')) != 16:
             flash('Número de tarjeta inválido')
             return redirect(request.url)
         
-        # Registrar la compra
-        users['erik']['purchases'].append(doc_id)
+        amount = doc[4]
+        royalty = amount * 0.7
         
-        # Calcular regalía
-        royalty = doc['price'] * 0.7  # 70% para el autor
-        users['maria']['balance'] += royalty
+        insert_transaction(
+            doc_id=doc_id,
+            buyer_id=session['user_id'],
+            amount=amount,
+            royalty=royalty,
+            payment_method='tarjeta'
+        )
+        
+        update_user_balance(doc[6], fetch_user_balance(doc[6]) + royalty)
+        register_purchase(session['user_id'], doc_id)
         
         flash('Compra exitosa! El documento ha sido añadido a tu biblioteca.')
-        return redirect(url_for('library'))
+        return redirect(url_for('view_library'))
     
-    return render_template('payment.html', document=doc)
+    return render_template('payment.html', document={
+        'id': doc[0], 'title': doc[1], 'price': doc[4]
+    })
 
 @app.route('/library')
-def library():
-    user_purchases = [doc for doc in documents if doc['id'] in users['erik']['purchases']]
-    return render_template('library.html', purchases=user_purchases)
-
-# Elimina cualquier otra definición de @app.route('/dashboard') que tengas
-# y deja solo esta:
+@login_required
+def view_library():
+    if session.get('role') != 'comprador':
+        flash('Solo los compradores pueden acceder a la biblioteca')
+        return redirect(url_for('index'))
+    return render_template('library.html', purchases=fetch_library(session['user_id']))
 
 @app.route('/dashboard')
-def dashboard():
-    author_docs = [doc for doc in documents if doc['author'] == 'María']
-    total_earnings = sum(doc['price'] * 0.7 for doc in author_docs)
-    return render_template('author_dashboard.html',
-                         documents=author_docs,
-                         balance=users['maria']['balance'],
-                         total_earnings=total_earnings)
+@login_required
+def author_dashboard():
+    if session.get('role') != 'vendedor':
+        flash('Solo los vendedores pueden acceder al panel de control')
+        return redirect(url_for('index'))
+        
+    author_docs = get_author_documents(session['user_id'])
+    total_earnings = 0
+    formatted_docs = []
     
+    for doc in author_docs:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("SELECT SUM(regalia) FROM transacciones WHERE documentoId = %s", (doc[0],))
+        earnings = cur.fetchone()[0] or 0
+        cur.close()
+        conn.close()
+        
+        total_earnings += earnings
+        formatted_docs.append({
+            'id': doc[0], 'title': doc[1], 'price': doc[4],
+            'category': doc[5], 'earnings': earnings
+        })
+    
+    return render_template('author_dashboard.html',
+        documents=formatted_docs,
+        balance=fetch_user_balance(session['user_id']),
+        total_earnings=total_earnings
+    )
+
+# Función de conexión a la base de datos
+def get_db_connection():
+    return psycopg2.connect(
+        host="localhost",
+        database="bdEducApp",
+        user="postgres",
+        password = "@Uc19072004e".encode('ascii', 'ignore').decode('ascii'),  # Cambiar por tu contraseña
+        client_encoding='utf8'  # Fuerza la codificación UTF-8
+    )
+
 if __name__ == '__main__':
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
     app.run(debug=True)

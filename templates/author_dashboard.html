@@ -1,26 +1,27 @@
+<!DOCTYPE html>
 {% extends "layout.html" %}
 
 {% block content %}
-    <h2>Panel del Autor</h2>
+    <h2>Panel del autor</h2>
     
     <div class="author-stats">
         <div class="stat-card">
-            <h3>Documentos Publicados</h3>
+            <h3>Documentos publicados</h3>
             <p class="stat-value">{{ documents|length }}</p>
         </div>
         
         <div class="stat-card">
-            <h3>Ganancias Totales</h3>
+            <h3>Ganancias totales</h3>
             <p class="stat-value">${{ "%.2f"|format(total_earnings) }}</p>
         </div>
         
         <div class="stat-card">
-            <h3>Saldo Disponible</h3>
+            <h3>Saldo disponible</h3>
             <p class="stat-value">${{ "%.2f"|format(balance) }}</p>
         </div>
     </div>
     
-    <h3>Tus Documentos</h3>
+    <h3>Tus documentos</h3>
     <table class="documents-table">
         <thead>
             <tr>
@@ -37,9 +38,9 @@
                 <td>{{ doc.title }}</td>
                 <td>${{ doc.price }}</td>
                 <td>{{ doc.category }}</td>
-                <td>${{ "%.2f"|format(doc.price * 0.7) }}</td>
+                <td>${{ "%.2f"|format(doc.price|float * 0.7) }}</td>
                 <td>
-                    <a href="{{ url_for('document', doc_id=doc.id) }}">Ver</a>
+                    <a href="{{ url_for('view_document', doc_id=doc.id) }}">Ver</a>
                 </td>
             </tr>
             {% endfor %}
@@ -48,11 +49,12 @@
     
     <div class="withdraw-section">
         <h3>Retirar Fondos</h3>
-        <form method="POST" action="{{ url_for('withdraw') }}">
+        <form method="POST" action="{{ url_for('author_dashboard') }}">
+            <label>Saldo disponible: ${{ "%.2f"|format(balance) }}</label>
             <label>Monto a retirar:
                 <input type="number" name="amount" min="1" max="{{ balance }}" step="0.01">
             </label>
-            <button type="submit" class="withdraw-button">Solicitar Retiro</button>
+            <button type="submit" class="withdraw-button">Solicitar retiro</button>
         </form>
     </div>
 {% endblock %}

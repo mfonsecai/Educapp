@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 {% extends "layout.html" %}
 
 {% block content %}
@@ -22,11 +23,11 @@
         </div>
         
         <div class="document-actions">
-            {% if document.id in users['erik']['purchases'] %}
+            {% if users and document.id in users.get(session['user_id'], {}).get('purchases', []) %}
                 <a href="{{ url_for('static', filename='uploads/' + document.file) }}" class="download-button" download>Descargar Documento</a>
                 <p class="purchased-message">Ya has comprado este documento</p>
             {% else %}
-                <a href="{{ url_for('payment', doc_id=document.id) }}" class="buy-button">Comprar por ${{ document.price }}</a>
+            <a href="{{ url_for('process_payment', doc_id=document.id) }}" class="buy-button">Comprar por ${{ document.price }}</a>
                 <p class="guarantee">Garantía de satisfacción o devolución</p>
             {% endif %}
         </div>
