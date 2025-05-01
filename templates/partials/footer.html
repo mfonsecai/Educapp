@@ -1,0 +1,29 @@
+<footer class="site-footer">
+    <div class="footer-grid">
+        <div class="footer-brand">
+            <img src="{{ url_for('static', filename='uploads/logo-white.svg') }}" alt="EducApp" class="footer-logo">
+            <p class="footer-slogan">Plataforma de intercambio de materiales educativos</p>
+        </div>
+        
+        <div class="footer-section">
+            <h4>Enlaces</h4>
+            <ul>
+                <li><a href="{{ url_for('index') }}">Inicio</a></li>
+                <li><a href="{{ url_for('browse_documents') }}">Documentos</a></li>
+                <li><a href="#">Acerca de</a></li>
+            </ul>
+        </div>
+        
+        <div class="footer-section">
+            <h4>Legal</h4>
+            <ul>
+                <li><a href="#">Términos</a></li>
+                <li><a href="#">Privacidad</a></li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="footer-bottom">
+        <p>© 2025 EducApp. Todos los derechos reservados.</p>
+    </div>
+</footer>

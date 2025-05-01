@@ -1,4 +1,4 @@
-{% extends "base_vendedor.html" %}
+{% extends "vendor/base_vendedor.html" %}
 {% set active_page = 'publish' %}
 
 {% block content %}
@@ -7,6 +7,7 @@
         <h3><i class="fas fa-plus-circle"></i> {{ 'Editar Documento' if edit_mode else 'Publicar Nuevo Documento' }}</h3>
         
         <form method="POST" enctype="multipart/form-data" class="educapp-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <div class="educapp-form-group">
                 <label for="title">Título del Documento*</label>
                 <input type="text" id="title" name="title" value="{{ document.title if document }}" required>
@@ -67,7 +68,7 @@
             
             <div class="educapp-form-actions">
                 <button type="submit" class="educapp-submit-btn">
-                    <i class="fas fa-save"></i> {{ 'Actualizar' if edit_mode else 'Publicar' }}
+                    <i class="fas fa-save"></i> Publicar
                 </button>
                 <a href="{{ url_for('vendor_documents') }}" class="educapp-cancel-btn">
                     Cancelar

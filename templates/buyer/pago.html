@@ -1,0 +1,41 @@
+{% extends "buyer/base_comprador.html" %}
+
+{% block content %}
+<div class="payment-container">
+    <h2>Confirmar Compra</h2>
+    
+    <div class="document-info">
+        <h3>{{ document.title }}</h3>
+        <p>Autor: {{ document.author }}</p>
+        <p class="price">Precio: ${{ "%.2f"|format(document.price) }}</p>
+    </div>
+    
+    <form method="POST" class="payment-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>  <!-- Añade esta línea -->
+        
+        <div class="form-group">
+            <label for="card_number">Número de Tarjeta</label>
+            <input type="text" id="card_number" name="card_number" 
+                   placeholder="1234 5678 9012 3456" required>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="expiry">Fecha Exp.</label>
+                <input type="text" id="expiry" name="expiry" 
+                       placeholder="MM/AA" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="cvv">CVV</label>
+                <input type="text" id="cvv" name="cvv" 
+                       placeholder="123" required>
+            </div>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">
+            Confirmar Pago
+        </button>
+    </form>
+</div>
+{% endblock %}

@@ -103,19 +103,7 @@ def update_user_balance(user_id, new_balance):
     finally:
         conn.close()
 
-# Operaciones de documentos
-def fetch_documents(limit=None):
-    conn = get_db_connection()
-    try:
-        with conn.cursor() as cur:
-            query = "SELECT documentoId, titulo, precio, categoria, rutaArchivo FROM documentos"
-            if limit:
-                query += f" LIMIT {limit}"
-            cur.execute(query)
-            return cur.fetchall()
-    finally:
-        conn.close()
-        
+
 def fetch_all_users():
     conn = get_db_connection()
     try:
@@ -136,11 +124,37 @@ def get_document_by_id(doc_id):
     conn = get_db_connection()
     try:
         with conn.cursor() as cur:
-            cur.execute("SELECT * FROM documentos WHERE documentoId = %s", (doc_id,))
+            cur.execute("""
+                SELECT documentoId, titulo, descripcion, rutaArchivo, 
+                       precio, categoria, autorId, verificado, 
+                       fechaSubida, paginas
+                FROM documentos 
+                WHERE documentoId = %s
+            """, (doc_id,))
             return cur.fetchone()
     finally:
         conn.close()
-
+def check_purchase(user_id, doc_id):
+    """Versión mejorada con manejo de errores"""
+    if not user_id or not doc_id:
+        return False
+        
+    conn = None
+    try:
+        conn = get_db_connection()
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT 1 FROM bibliotecas 
+                WHERE usuarioId = %s AND documentoId = %s
+                LIMIT 1
+            """, (str(user_id), str(doc_id)))  # Aseguramos strings
+            return cur.fetchone() is not None
+    except Exception as e:
+        print(f"ERROR en check_purchase: {str(e)}")
+        return False
+    finally:
+        if conn:
+            conn.close()
 def insert_document(doc_id, title, description, file_path, price, category, author_id, pages):
     conn = get_db_connection()
     try:
@@ -188,12 +202,153 @@ def fetch_library(user_id):
     conn = get_db_connection()
     try:
         with conn.cursor() as cur:
-            cur.execute(
-                """SELECT d.titulo, d.precio, d.categoria, d.rutaArchivo 
-                FROM bibliotecas b JOIN documentos d ON b.documentoId = d.documentoId 
-                WHERE b.usuarioId = %s""",
-                (user_id,)
-            )
+            cur.execute("""
+                SELECT d.documentoId as id, d.titulo as title, d.precio as price, 
+                       d.categoria as category, d.rutaArchivo as file_path
+                FROM bibliotecas b 
+                JOIN documentos d ON b.documentoId = d.documentoId 
+                WHERE b.usuarioId = %s
+            """, (user_id,))
+            
+            # Convertir a lista de diccionarios
+            columns = [desc[0] for desc in cur.description]
+            return [dict(zip(columns, row)) for row in cur.fetchall()]
+    finally:
+        conn.close()
+def get_document_sales(document_id):
+    """Obtiene todas las ventas de un documento específico"""
+    conn = get_db_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT t.transaccionId, t.compradorId, t.monto, t.regalia, t.fechaTransaccion,
+                       u.nombre as comprador_nombre
+                FROM transacciones t
+                JOIN usuarios u ON t.compradorId = u.usuarioId
+                WHERE t.documentoId = %s
+                ORDER BY t.fechaTransaccion DESC
+            """, (document_id,))
+            
+            sales = []
+            for row in cur.fetchall():
+                sales.append({
+                    'transaction_id': row[0],
+                    'buyer_id': row[1],
+                    'amount': row[2],
+                    'royalty': row[3],
+                    'date': row[4],
+                    'buyer_name': row[5]
+                })
+            return sales
+    finally:
+        conn.close()
+def get_document_earnings(document_id):
+    """Obtiene las ganancias totales para un documento"""
+    conn = get_db_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT SUM(regalia) 
+                FROM transacciones 
+                WHERE documentoId = %s
+            """, (document_id,))
+            result = cur.fetchone()
+            return result[0] if result[0] else 0.00
+    finally:
+        conn.close()
+def get_document_sales_count(document_id):
+    """Obtiene el número de ventas de un documento"""
+    conn = get_db_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT COUNT(*) 
+                FROM transacciones 
+                WHERE documentoId = %s
+            """, (document_id,))
+            return cur.fetchone()[0] or 0
+    finally:
+        conn.close()
+                
+def get_total_spent(user_id):
+    """Obtiene el total gastado por el comprador"""
+    conn = get_db_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT SUM(monto) FROM transacciones
+                WHERE compradorId = %s
+            """, (user_id,))
+            return cur.fetchone()[0] or 0
+    finally:
+        conn.close()
+
+def get_recent_purchases(user_id, limit=3):
+    """Obtiene las compras recientes"""
+    conn = get_db_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT d.documentoId, d.titulo, d.categoria, t.fechaTransaccion
+                FROM transacciones t
+                JOIN documentos d ON t.documentoId = d.documentoId
+                WHERE t.compradorId = %s
+                ORDER BY t.fechaTransaccion DESC
+                LIMIT %s
+            """, (user_id, limit))
+            return cur.fetchall()
+    finally:
+        conn.close()
+
+def get_user_transactions(user_id):
+    """Obtiene el historial completo de transacciones"""
+    conn = get_db_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT t.transaccionId, d.titulo, t.monto, t.fechaTransaccion, 
+                       u.nombre as autor, d.categoria
+                FROM transacciones t
+                JOIN documentos d ON t.documentoId = d.documentoId
+                JOIN usuarios u ON d.autorId = u.usuarioId
+                WHERE t.compradorId = %s
+                ORDER BY t.fechaTransaccion DESC
+            """, (user_id,))
+            return cur.fetchall()
+    finally:
+        conn.close()
+
+def update_user_profile(user_id, name, email):
+    """Actualiza los datos del usuario"""
+    conn = get_db_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""
+                UPDATE usuarios
+                SET nombre = %s, correo = %s
+                WHERE usuarioId = %s
+            """, (name, email, user_id))
+            conn.commit()
+            return True
+    except Exception as e:
+        print(f"Error updating profile: {e}")
+        return False
+    finally:
+        conn.close()
+        
+def fetch_documents(limit=None):
+    conn = get_db_connection()
+    try:
+        with conn.cursor() as cur:
+            query = """
+                SELECT d.documentoId, d.titulo, d.descripcion, d.rutaArchivo, 
+                       CAST(d.precio AS FLOAT), d.categoria, d.autorId, d.verificado
+                FROM documentos d
+                ORDER BY d.fechaSubida DESC
+            """
+            if limit:
+                query += f" LIMIT {limit}"
+            cur.execute(query)
             return cur.fetchall()
     finally:
         conn.close()

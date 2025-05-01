@@ -1,0 +1,55 @@
+{% extends "vendor/base_vendedor.html" %}
+{% set active_page = 'documents' %}
+
+{% block content %}
+<div class="educapp-panel">
+    <div class="educapp-form-container">
+        <h3><i class="fas fa-edit"></i> Editar Documento</h3>
+        
+        <form method="POST" action="{{ url_for('edit_document', doc_id=document.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <div class="educapp-form-group">
+                <label for="title">Título del Documento*</label>
+                <input type="text" id="title" name="title" value="{{ document.title }}" required>
+            </div>
+            
+            <div class="educapp-form-group">
+                <label for="category">Categoría*</label>
+                <select id="category" name="category" required>
+                    <option value="">Seleccione una categoría</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat }}" {% if document.category == cat %}selected{% endif %}>
+                        {{ cat }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="educapp-form-group">
+                <label for="price">Precio (USD)*</label>
+                <input type="number" step="0.01" id="price" name="price" min="1" max="100" 
+                       value="{{ document.price }}" required>
+            </div>
+            
+            <div class="educapp-form-group">
+                <label for="description">Descripción*</label>
+                <textarea id="description" name="description" rows="5" required>{{ document.description }}</textarea>
+            </div>
+            
+            <div class="educapp-form-group">
+                <label for="pages">Número de Páginas*</label>
+                <input type="number" id="pages" name="pages" min="1" value="{{ document.pages }}" required>
+            </div>
+            
+            <div class="educapp-form-actions">
+                <button type="submit" class="educapp-submit-btn">
+                    <i class="fas fa-save"></i> Guardar Cambios
+                </button>
+                <a href="{{ url_for('vendor_documents') }}" class="educapp-cancel-btn">
+                    Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

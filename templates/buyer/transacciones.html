@@ -1,0 +1,40 @@
+{% extends "buyer/base_comprador.html" %}
+
+{% block title %}Mis Compras{% endblock %}
+
+{% block content %}
+<div class="educapp-panel">
+    <div class="educapp-section-header">
+        <h3><i class="fas fa-history"></i> Historial de Compras</h3>
+    </div>
+    
+    <div class="educapp-transactions-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>Documento</th>
+                    <th>Autor</th>
+                    <th>Monto</th>
+                    <th>Fecha</th>
+                    <th>Categoría</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for trans in transactions %}
+                <tr>
+                    <td>{{ trans[1] }}</td>
+                    <td>{{ trans[4] }}</td>
+                    <td>${{ "%.2f"|format(trans[2]) }}</td>
+                    <td>{{ trans[3].strftime('%d/%m/%Y') }}</td>
+                    <td>{{ trans[5] }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5">No tienes transacciones registradas</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

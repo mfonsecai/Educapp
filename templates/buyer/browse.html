@@ -1,50 +1,69 @@
-{% extends "base.html" %}
+{% extends "layout.html" %}
+
+{% block title %}Explorar Documentos | EducApp{% endblock %}
 
 {% block content %}
-<div class="container">
-    <h2>Explorar Documentos</h2>
-    
-    <form class="mb-4">
-        <div class="row">
-            <div class="col-md-4">
-                <input type="text" name="q" class="form-control" placeholder="Buscar..." value="{{ query }}">
+<section class="educapp-browse-section">
+    <div class="educapp-search-container">
+        <h2>Explorar Documentos</h2>
+        
+        <form method="GET" action="{{ url_for('browse_documents') }}" class="educapp-search-form">
+            <div class="educapp-search-bar">
+                <input type="text" name="q" placeholder="Buscar documentos..." value="{{ query }}">
+                <button type="submit">
+                    <i class="fas fa-search"></i>
+                </button>
             </div>
-            <div class="col-md-3">
-                <select name="category" class="form-control">
+            
+            <div class="educapp-filter-options">
+                <select name="category">
                     <option value="">Todas las categorías</option>
-                    {% for cat in ['Matemáticas', 'Física', 'Química', 'Literatura', 'Historia'] %}
-                    <option {% if category==cat %}selected{% endif %}>{{ cat }}</option>
-                    {% endfor %}
+                    <option value="Matemáticas" {% if category == 'Matemáticas' %}selected{% endif %}>Matemáticas</option>
+                    <option value="Física" {% if category == 'Física' %}selected{% endif %}>Física</option>
+                    <option value="Química" {% if category == 'Química' %}selected{% endif %}>Química</option>
+                    <option value="Literatura" {% if category == 'Literatura' %}selected{% endif %}>Literatura</option>
+                    <option value="Historia" {% if category == 'Historia' %}selected{% endif %}>Historia</option>
                 </select>
             </div>
-            <div class="col-md-2">
-                <input type="number" name="min_price" class="form-control" placeholder="Mínimo" value="{{ min_price }}">
-            </div>
-            <div class="col-md-2">
-                <input type="number" name="max_price" class="form-control" placeholder="Máximo" value="{{ max_price }}">
-            </div>
-            <div class="col-md-1">
-                <button type="submit" class="btn btn-primary">Filtrar</button>
-            </div>
-        </div>
-    </form>
-    
-    <div class="row">
-        {% for doc in documents %}
-        <div class="col-md-4 mb-4">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h5 class="card-title">{{ doc.title }}</h5>
-                    <h6 class="card-subtitle mb-2 text-muted">{{ doc.category }} - ${{ "%.2f"|format(doc.price) }}</h6>
-                    <p class="card-text">{{ doc.preview }}</p>
-                    <p class="text-muted">{{ doc.sales }} ventas</p>
-                </div>
-                <div class="card-footer">
-                    <a href="{{ url_for('view_document', doc_id=doc.id) }}" class="btn btn-primary">Ver Detalles</a>
-                </div>
-            </div>
-        </div>
-        {% endfor %}
+        </form>
     </div>
-</div>
+
+    <div class="educapp-documents-results">
+        {% if documents %}
+            <div class="educapp-documents-grid">
+                {% for doc in documents %}
+                <div class="educapp-document-card">
+                    <div class="educapp-document-thumbnail">
+                        <img src="{{ url_for('static', filename='images/doc-thumbnail.jpg') }}" alt="{{ doc.title }}">
+                        <span class="educapp-document-price">${{ "%.2f"|format(doc.price) }}</span>
+                    </div>
+                    
+                    <div class="educapp-document-info">
+                        <h4>{{ doc.title }}</h4>
+                        <p class="educapp-document-category">{{ doc.category }}</p>
+                        <p class="educapp-document-author">Por: {{ doc.author }}</p>
+                        
+                        <div class="educapp-document-actions">
+                            <a href="{{ url_for('view_document', doc_id=doc.id) }}" class="educapp-view-btn">
+                                <i class="fas fa-eye"></i> Ver detalles
+                            </a>
+                            {% if 'user_id' in session and session['role'] == 'comprador' %}
+                            <a href="{{ url_for('process_payment', doc_id=doc.id) }}" class="educapp-buy-btn">
+                                <i class="fas fa-shopping-cart"></i> Comprar
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="educapp-no-results">
+                <i class="fas fa-search"></i>
+                <h3>No se encontraron documentos</h3>
+                <p>Intenta con otros términos de búsqueda o categorías</p>
+            </div>
+        {% endif %}
+    </div>
+</section>
 {% endblock %}

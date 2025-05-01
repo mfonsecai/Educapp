@@ -1,0 +1,48 @@
+<header class="site-header">
+    <div class="header-container">
+        <a href="{{ url_for('index') }}" class="logo-link">
+            <img src="{{ url_for('static', filename='uploads/logo.svg') }}" alt="EducApp" class="logo-img">
+        </a>
+        
+        <nav class="main-nav">
+            <a href="{{ url_for('index') }}" class="nav-link {% if request.path == url_for('index') %}active{% endif %}">
+                Inicio
+            </a>
+            <a href="{{ url_for('browse_documents') }}" class="nav-link {% if request.path == url_for('browse_documents') %}active{% endif %}">
+                Documentos
+            </a>
+            {% if 'user_id' in session %}
+                {% if session['role'] == 'vendedor' %}
+                    <a href="{{ url_for('vendor_dashboard') }}" class="nav-link {% if request.path == url_for('vendor_dashboard') %}active{% endif %}">
+                        Panel Vendedor
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('buyer_dashboard') }}" class="nav-link {% if request.path == url_for('buyer_dashboard') %}active{% endif %}">
+                        Panel Comprador
+                    </a>
+                {% endif %}
+            {% endif %}
+        </nav>
+        
+        <div class="auth-buttons">
+            {% if 'user_id' not in session %}
+                <a href="{{ url_for('login') }}" class="btn btn-login">Iniciar sesión</a>
+                <a href="{{ url_for('register') }}" class="btn btn-primary">Registrarse</a>
+            {% else %}
+                <div class="user-dropdown">
+                    <button class="btn btn-profile">
+                        <i class="fas fa-user"></i> {{ session['username'] }}
+                    </button>
+                    <div class="dropdown-content">
+                        <a href="{{ url_for('logout') }}">Cerrar sesión</a>
+                        {% if session['role'] == 'vendedor' %}
+                            <a href="{{ url_for('vendor_dashboard') }}">Mi perfil</a>
+                        {% else %}
+                            <a href="{{ url_for('buyer_profile') }}">Mi perfil</a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</header>

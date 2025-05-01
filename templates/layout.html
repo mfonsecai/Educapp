@@ -2,33 +2,24 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EducApp - Venta de trabajos educativos</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>EducApp - {% block title %}Intercambio de Material Educativo{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style2.css') }}">
+    {% block extra_css %}{% endblock %}
 </head>
-<body>
-    <header>
-        <h1>EducApp</h1>
-        <nav>
-            <a href="{{ url_for('index') }}">Inicio</a>
-            <a href="{{ url_for('publish_document') }}">Publicar material</a>
-            <a href="{{ url_for('browse_documents') }}">Buscar documentos</a>
-            <a href="{{ url_for('view_library') }}">Mi biblioteca</a>
-            <a href="{{ url_for('author_dashboard') }}">Panel de autor</a>
-            {% if 'user_id' in session %}
-            <a href="{{ url_for('logout') }}">Cerrar sesión</a>
-            {% else %}
-            <a href="{{ url_for('login') }}">Iniciar sesión</a>
-            {% endif %}
-        </nav>
-    </header>
+<body class="{% if 'role' in session %}role-{{ session.role }}{% endif %}">
+    {% include 'partials/header.html' %}
     
-    <main>
-        {% with messages = get_flashed_messages() %}
+    <main class="main-content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
-                <div class="flashes">
-                    {% for message in messages %}
-                        <p>{{ message }}</p>
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">
+                            {{ message }}
+                        </div>
                     {% endfor %}
                 </div>
             {% endif %}
@@ -37,8 +28,9 @@
         {% block content %}{% endblock %}
     </main>
     
-    <footer>
-        <p>Sistema Distribuido de Venta de Trabajos Educativos - 2025</p>
-    </footer>
+    {% include 'partials/footer.html' %}
+    
+    <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+    {% block extra_js %}{% endblock %}
 </body>
 </html>

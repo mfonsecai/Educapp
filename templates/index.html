@@ -1,28 +1,83 @@
-<!DOCTYPE html>
 {% extends "layout.html" %}
 
+{% block title %}Inicio - EducApp{% endblock %}
+
 {% block content %}
-    <section class="hero">
-        <h2>Comparte y adquiere conocimiento</h2>
-        <p>Plataforma para la venta de trabajos educativos entre profesores y estudiantes</p>
+<section class="hero-section">
+    <div class="hero-content">
+        <h1>Comparte y adquiere conocimiento académico</h1>
+        <p>Plataforma colaborativa donde educadores y estudiantes intercambian materiales de calidad</p>
         
-        <div class="actions">
-            <a href="{{ url_for('publish_document') }}" class="button">Publicar Material</a>
-            <a href="{{ url_for('browse_documents') }}" class="button">Buscar Documentos</a>
+        <div class="hero-buttons">
+            {% if 'user_id' not in session %}
+                <a href="{{ url_for('register') }}" class="btn btn-primary">Regístrate gratis</a>
+                <a href="{{ url_for('login') }}" class="btn btn-secondary">Iniciar sesión</a>
+            {% else %}
+                <a href="{{ url_for('browse_documents') }}" class="btn btn-primary">Explorar documentos</a>
+                {% if session['role'] == 'vendedor' %}
+                    <a href="{{ url_for('publish_document') }}" class="btn btn-secondary">Publicar material</a>
+                {% endif %}
+            {% endif %}
         </div>
-    </section>
+    </div>
+</section>
+
+<section class="featured-documents">
+    <h2><i class="fas fa-star"></i> Documentos destacados</h2>
     
-    <section class="featured">
-        <h3>Documentos destacados</h3>
-        <div class="documents-grid">
-            {% for doc in documents %}
-            <div class="document-card">
-                <h4>{{ doc.title }}</h4>
-                <p>Autor: {{ doc.author }}</p>
-                <p>Precio: ${{ doc.price }}</p>
-                <a href="{{ url_for('view_document', doc_id=doc.id) }}">Ver detalles</a>
+    <div class="documents-grid">
+        {% for doc in documents %}
+        <div class="document-card">
+            <div class="document-thumbnail">
+                <img src="{{ url_for('static', filename='images/doc-thumbnail.jpg') }}" alt="{{ doc.title }}">
+                <span class="document-price">${{ "%.2f"|format(doc.price) }}</span>
             </div>
-            {% endfor %}
+            
+            <div class="document-info">
+                <h3>{{ doc.title }}</h3>
+                <p class="document-meta">
+                    <span class="category">{{ doc.category }}</span>
+                    <span class="author">Por: {{ doc.author }}</span>
+                </p>
+                
+                <a href="{{ url_for('view_document', doc_id=doc.id) }}" class="btn btn-view">
+                    <i class="fas fa-eye"></i> Ver detalles
+                </a>
+            </div>
         </div>
-    </section>
+        {% else %}
+        <div class="no-documents">
+            <p>No hay documentos destacados en este momento</p>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <div class="view-all-container">
+        <a href="{{ url_for('browse_documents') }}" class="btn btn-view-all">Ver todos los documentos</a>
+    </div>
+</section>
+
+<section class="features-section">
+    <h2>¿Por qué usar EducApp?</h2>
+    
+    <div class="features-grid">
+        <div class="feature-card">
+            <i class="fas fa-graduation-cap"></i>
+            <h3>Material académico</h3>
+            <p>Documentos verificados por nuestra comunidad de educadores</p>
+        </div>
+        
+        <div class="feature-card">
+            <i class="fas fa-hand-holding-usd"></i>
+            <h3>Gana dinero</h3>
+            <p>Los educadores reciben el 70% de regalías por cada venta</p>
+        </div>
+        
+        <div class="feature-card">
+            <i class="fas fa-shield-alt"></i>
+            <h3>Seguro y confiable</h3>
+            <p>Protegemos tus transacciones y datos personales</p>
+        </div>
+    </div>
+</section>
 {% endblock %}

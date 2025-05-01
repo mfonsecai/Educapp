@@ -17,6 +17,7 @@
             </div>
             
             <form method="POST" class="educapp-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <div class="educapp-form-group">
                     <label for="usuarioId">Número de identificación</label>
                     <input type="text" id="usuarioId" name="usuarioId" required placeholder="Ej: 123456789">
@@ -62,7 +63,7 @@
                 </div>
                 
                 <button type="submit" class="educapp-submit-btn">
-                    Registrarse <i class="fas fa-arrow-right"></i>
+                    Registrarse
                 </button>
                 
                 <div class="educapp-login-link">

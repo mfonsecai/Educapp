@@ -1,0 +1,84 @@
+{% extends "buyer/base_comprador.html" %}
+{% set active_page = 'library' %}
+
+{% block content %}
+<div class="educapp-panel">
+    <div class="educapp-document-viewer">
+        <div class="educapp-document-header">
+            <h2>{{ document.title }}</h2>
+            <div class="educapp-document-meta">
+                <span class="educapp-author">Autor: {{ document.author }}</span>
+                <span class="educapp-category">{{ document.category }}</span>
+                <span class="educapp-pages">{{ document.pages }} páginas</span>
+                {% if not document.purchased %}
+                <span class="educapp-price">${{ "%.2f"|format(document.price) }}</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="educapp-document-actions">
+            {% if document.purchased %}
+                <a href="{{ url_for('serve_full_document', doc_id=document.id) }}" 
+                   class="educapp-btn" 
+                   download>
+                    <i class="fas fa-download"></i> Descargar
+                </a>
+            {% else %}
+                <a href="{{ url_for('process_payment', doc_id=document.id) }}" 
+                   class="educapp-btn primary">
+                    <i class="fas fa-shopping-cart"></i> Comprar Documento
+                </a>
+            {% endif %}
+        </div>
+
+        <div class="educapp-document-content">
+            {% if document.purchased %}
+                <iframe src="{{ url_for('serve_full_document', doc_id=document.id) }}" 
+                        class="educapp-document-iframe"
+                        title="{{ document.title }}"></iframe>
+            {% else %}
+                <div class="educapp-document-preview">
+                    <img src="{{ document.preview_url }}" 
+                         alt="Vista previa de {{ document.title }}"
+                         class="educapp-preview-img">
+                    <div class="educapp-preview-watermark">
+                        <i class="fas fa-lock"></i> Vista previa - Compra para ver el documento completo
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="educapp-document-description">
+            <h3>Descripción</h3>
+            <p>{{ document.description or "Este documento no tiene descripción." }}</p>
+        </div>
+
+        <div class="educapp-document-details">
+            <div class="educapp-detail-card">
+                <h4><i class="fas fa-info-circle"></i> Detalles</h4>
+                <ul>
+                    <li><strong>Autor:</strong> {{ document.author }}</li>
+                    <li><strong>Categoría:</strong> {{ document.category }}</li>
+                    <li><strong>Páginas:</strong> {{ document.pages }}</li>
+                    {% if not document.purchased %}
+                    <li><strong>Precio:</strong> ${{ "%.2f"|format(document.price) }}</li>
+                    {% endif %}
+                    <li><strong>Subido:</strong> {{ document.upload_date.strftime('%d/%m/%Y') if document.upload_date else "Fecha no disponible" }}</li>
+                </ul>
+            </div>
+
+            {% if document.purchased %}
+            <div class="educapp-detail-card">
+                <h4><i class="fas fa-file-download"></i> Opciones</h4>
+                <a href="{{ url_for('serve_full_document', doc_id=document.id) }}" 
+                   class="educapp-btn small" 
+                   download>
+                    <i class="fas fa-download"></i> Descargar PDF
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}
