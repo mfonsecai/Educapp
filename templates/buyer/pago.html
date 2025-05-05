@@ -1,41 +1,68 @@
 {% extends "buyer/base_comprador.html" %}
 
+{% block title %}Confirmar Compra | EducApp{% endblock %}
+
 {% block content %}
-<div class="payment-container">
-    <h2>Confirmar Compra</h2>
+<div class="educapp-panel" style="max-width: 600px; margin: 0 auto;">
+    <h2 class="educapp-section-title" style="text-align: center; margin-bottom: 30px;">
+        <i class="fas fa-credit-card"></i> Confirmar Compra
+    </h2>
     
-    <div class="document-info">
-        <h3>{{ document.title }}</h3>
-        <p>Autor: {{ document.author }}</p>
-        <p class="price">Precio: ${{ "%.2f"|format(document.price) }}</p>
+    <div class="educapp-document-card" style="margin-bottom: 30px; padding: 20px;">
+        <h3 style="margin-top: 0; color: #2c3e50;">{{ document.title }}</h3>
+        <p class="educapp-document-author" style="margin: 5px 0;">
+            <i class="fas fa-user"></i> Autor: {{ document.author }}
+        </p>
+        <p class="educapp-document-price" style="font-size: 1.2em; font-weight: bold; color: #27ae60;">
+            <i class="fas fa-tag"></i> Precio: ${{ "%.2f"|format(document.price) }}
+        </p>
     </div>
     
-    <form method="POST" class="payment-form">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>  <!-- Añade esta línea -->
+    <form method="POST" class="educapp-form" style="background: #f9f9f9; padding: 25px; border-radius: 8px;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         
-        <div class="form-group">
-            <label for="card_number">Número de Tarjeta</label>
+        <div class="educapp-form-group">
+            <label for="card_number" class="educapp-form-label">
+                <i class="far fa-credit-card"></i> Número de Tarjeta
+            </label>
             <input type="text" id="card_number" name="card_number" 
-                   placeholder="1234 5678 9012 3456" required>
+                   class="educapp-form-input"
+                   placeholder="1234 5678 9012 3456" required
+                   pattern="[0-9\s]{13,19}" 
+                   title="Ingrese un número de tarjeta válido (13-19 dígitos)">
         </div>
         
-        <div class="form-row">
-            <div class="form-group">
-                <label for="expiry">Fecha Exp.</label>
+        <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+            <div class="educapp-form-group" style="flex: 1;">
+                <label for="expiry" class="educapp-form-label">
+                    <i class="far fa-calendar-alt"></i> Fecha Expiración
+                </label>
                 <input type="text" id="expiry" name="expiry" 
-                       placeholder="MM/AA" required>
+                       class="educapp-form-input"
+                       placeholder="MM/AA" required
+                       pattern="(0[1-9]|1[0-2])\/?([0-9]{2})"
+                       title="Formato MM/AA">
             </div>
             
-            <div class="form-group">
-                <label for="cvv">CVV</label>
+            <div class="educapp-form-group" style="flex: 1;">
+                <label for="cvv" class="educapp-form-label">
+                    <i class="fas fa-lock"></i> CVV
+                </label>
                 <input type="text" id="cvv" name="cvv" 
-                       placeholder="123" required>
+                       class="educapp-form-input"
+                       placeholder="123" required
+                       pattern="[0-9]{3,4}"
+                       title="3 o 4 dígitos del código de seguridad">
             </div>
         </div>
         
-        <button type="submit" class="btn btn-primary">
-            Confirmar Pago
+        <button type="submit" class="educapp-doc-link"" style="width: 100%; padding: 12px;">
+            <i class="fas fa-check-circle"></i> Confirmar Pago
         </button>
     </form>
+    
+    <p style="text-align: center; margin-top: 20px; font-size: 0.9em; color: #7f8c8d;">
+        <i class="fas fa-lock"></i> Transacción segura - Tus datos están protegidos
+    </p>
 </div>
 {% endblock %}

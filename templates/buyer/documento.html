@@ -19,13 +19,13 @@
         <div class="educapp-document-actions">
             {% if document.purchased %}
                 <a href="{{ url_for('serve_full_document', doc_id=document.id) }}" 
-                   class="educapp-btn" 
+                    class="educapp-doc-link" 
                    download>
                     <i class="fas fa-download"></i> Descargar
                 </a>
             {% else %}
                 <a href="{{ url_for('process_payment', doc_id=document.id) }}" 
-                   class="educapp-btn primary">
+                class="educapp-doc-link">
                     <i class="fas fa-shopping-cart"></i> Comprar Documento
                 </a>
             {% endif %}
@@ -63,7 +63,6 @@
                     {% if not document.purchased %}
                     <li><strong>Precio:</strong> ${{ "%.2f"|format(document.price) }}</li>
                     {% endif %}
-                    <li><strong>Subido:</strong> {{ document.upload_date.strftime('%d/%m/%Y') if document.upload_date else "Fecha no disponible" }}</li>
                 </ul>
             </div>
 
@@ -71,7 +70,7 @@
             <div class="educapp-detail-card">
                 <h4><i class="fas fa-file-download"></i> Opciones</h4>
                 <a href="{{ url_for('serve_full_document', doc_id=document.id) }}" 
-                   class="educapp-btn small" 
+                    class="educapp-doc-link" 
                    download>
                     <i class="fas fa-download"></i> Descargar PDF
                 </a>

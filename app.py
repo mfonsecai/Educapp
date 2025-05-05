@@ -1,6 +1,7 @@
 from flask import send_file, send_from_directory, Flask, render_template, request, redirect, url_for, flash, session
 from flask_wtf.csrf import CSRFProtect
 from datetime import datetime, timedelta
+from decimal import Decimal
 import psycopg2
 from werkzeug.utils import secure_filename
 import os
@@ -360,7 +361,7 @@ def view_purchased_document(doc_id):
         document['author'] = author[1]
     
     return render_template('buyer/documento.html', document=document)
-app.route('/comprador/pago/<doc_id>', methods=['GET', 'POST'])
+@app.route('/comprador/pago/<doc_id>', methods=['GET', 'POST'])
 @login_required
 @buyer_required
 def process_payment(doc_id):
@@ -386,8 +387,9 @@ def process_payment(doc_id):
             flash('Número de tarjeta inválido', 'error')
             return redirect(request.url)
         
-        amount = doc[4]  # Asumiendo que el precio está en el índice 4
-        royalty = amount * 0.7
+        amount = Decimal(str(doc[4]))  # Convierte el precio a Decimal
+        royalty = amount * Decimal('0.7')  # Usa Decimal para el porcentaje
+        update_user_balance(doc[6], fetch_user_balance(doc[6]) + royalty)  # Ahora ambos son Decimal
         
         # Registrar transacción
         insert_transaction(
@@ -440,7 +442,7 @@ def buyer_profile():
             return redirect(url_for('buyer_profile'))
     
     user = get_user_by_id(session['user_id'])
-    return render_template('comprador/perfil.html',
+    return render_template('buyer/perfil.html',
                          user=user)
 
 ###############################################################################

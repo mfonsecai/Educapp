@@ -4,7 +4,8 @@
 
 {% block content %}
 <div class="educapp-panel">
-    <div class="educapp-stats-container">
+    <div class="educapp-stats-container" style="display: flex; flex-direction: column; gap: 20px;">
+        <!-- Primera card -->
         <div class="educapp-stat-card">
             <div class="educapp-stat-header">
                 <i class="fas fa-book"></i>
@@ -13,6 +14,7 @@
             <div class="educapp-stat-amount">{{ total_docs }}</div>
         </div>
         
+        <!-- Segunda card -->
         <div class="educapp-stat-card">
             <div class="educapp-stat-header">
                 <i class="fas fa-coins"></i>
@@ -20,29 +22,32 @@
             </div>
             <div class="educapp-stat-amount">${{ "%.2f"|format(total_gastado) }}</div>
         </div>
-    </div>
-    
-    <div class="educapp-section-header">
-        <h3><i class="fas fa-clock"></i> Tus compras recientes</h3>
-    </div>
-    
-    <div class="educapp-recent-docs">
-        {% if docs_recientes %}
-            {% for doc in docs_recientes %}
-            <div class="educapp-doc-card">
-                <img src="{{ url_for('static', filename='images/doc-placeholder.jpg') }}" alt="Documento">
-                <div class="educapp-doc-info">
-                    <h4>{{ doc[1] }}</h4>
-                    <p class="educapp-category-badge">{{ doc[2] }}</p>
-                    <a href="{{ url_for('view_purchased_document', doc_id=doc[0]) }}" class="educapp-action-btn">
-                        Ver documento
-                    </a>
-                </div>
+        
+        <!-- Tercera card -->
+        <div class="educapp-stat-card">
+            <div class="educapp-stat-header">
+                <i class="fas fa-book"></i>
+                <h3>Tus compras recientes</h3>
             </div>
-            {% endfor %}
-        {% else %}
-            <p>No tienes documentos recientes</p>
-        {% endif %}
+            <div class="educapp-recent-docs">
+                {% if docs_recientes %}
+                    {% for doc in docs_recientes %}
+                    <div class="educapp-doc-card" style="margin-top: 15px;">
+                        <img src="{{ url_for('static', filename='pdf.webp') }}" alt="Documento"   class="educapp-doc-img">
+                        <div class="educapp-doc-info">
+                            <h4>{{ doc[1] }}</h4>
+                            <p class="educapp-category-badge">{{ doc[2] }}</p>
+                            <a href="{{ url_for('view_purchased_document', doc_id=doc[0]) }}" class="educapp-doc-link">
+                                Ver documento
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p style="margin-top: 15px;">No tienes documentos recientes</p>
+                {% endif %}
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}

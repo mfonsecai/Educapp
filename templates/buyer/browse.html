@@ -34,7 +34,7 @@
                 {% for doc in documents %}
                 <div class="educapp-document-card">
                     <div class="educapp-document-thumbnail">
-                        <img src="{{ url_for('static', filename='images/doc-thumbnail.jpg') }}" alt="{{ doc.title }}">
+                        <img src="{{ url_for('static', filename='pdf.webp') }}" alt="{{ doc.title }}">
                         <span class="educapp-document-price">${{ "%.2f"|format(doc.price) }}</span>
                     </div>
                     

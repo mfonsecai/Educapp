@@ -26,18 +26,14 @@ body {
     color: var(--text-dark);
     line-height: 1.6;
 }
-
-/* ==================== */
-/* ESTRUCTURA PRINCIPAL */
-/* ==================== */
+/* === Estructura Principal === */
 .educapp-comprador-container {
     display: flex;
     min-height: 100vh;
+    background-color: #f5f7fa;
 }
 
-/* ============== */
-/* BARRA LATERAL */
-/* ============== */
+/* === Barra Lateral === */
 .educapp-sidebar {
     width: var(--sidebar-width);
     background: #2c3e50;
@@ -47,6 +43,7 @@ body {
     display: flex;
     flex-direction: column;
     z-index: 1000;
+    transition: width var(--transition-speed);
 }
 
 .educapp-brand {
@@ -111,9 +108,7 @@ body {
     text-align: center;
 }
 
-/* ======================== */
-/* SECCIÓN USUARIO Y LOGOUT */
-/* ======================== */
+/* === Sección Usuario === */
 .educapp-user-section {
     padding: 20px;
     background: rgba(0, 0, 0, 0.15);
@@ -176,46 +171,24 @@ body {
     background: rgba(220, 53, 69, 0.3);
 }
 
-.educapp-logout-btn i {
-    font-size: 1rem;
-}
-
-/* ================== */
-/* BARRA DE SCROLL */
-/* ================== */
-.educapp-nav::-webkit-scrollbar {
-    width: 5px;
-}
-
-.educapp-nav::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 10px;
-}
-
-.educapp-nav::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-/* ============== */
-/* CONTENIDO PRINCIPAL */
-/* ============== */
+/* === Contenido Principal === */
 .educapp-main-content {
     flex: 1;
     padding: 30px;
     margin-left: var(--sidebar-width);
     width: calc(100% - var(--sidebar-width));
+    transition: margin-left var(--transition-speed);
 }
 
-/* Panel principal */
 .educapp-panel {
     background: white;
     border-radius: var(--border-radius);
-    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+    box-shadow: var(--box-shadow);
     overflow: hidden;
     margin-bottom: 30px;
 }
 
-/* Contenedor de estadísticas */
+/* === Estadísticas === */
 .educapp-stats-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -223,15 +196,12 @@ body {
     padding: 25px;
 }
 
-/* ============================================ */
-/* TARJETAS DE ESTADÍSTICAS                     */
-/* ============================================ */
 .educapp-stat-card {
     background: white;
     border-radius: var(--border-radius);
     padding: 20px;
     box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
-    border: 1px solid #eaeaea;
+    border: 1px solid var(--gray-light);
     transition: all var(--transition-speed);
 }
 
@@ -256,7 +226,7 @@ body {
     margin: 0;
     font-size: 1.1rem;
     font-weight: 600;
-    color: #333;
+    color: var(--text-dark);
 }
 
 .educapp-stat-amount {
@@ -266,9 +236,364 @@ body {
     color: var(--text-dark);
 }
 
-/* Formularios */
-.educapp-form-container {
+.educapp-doc-img {
+    width: 50px;       /* Ancho fijo */
+    height: auto;      /* Alto automático para mantener proporción */
+    object-fit: contain; /* Asegura que la imagen se ajuste sin deformarse */
+}
+/* === Documentos Recientes === */
+
+.educapp-recent-docs {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 25px;
     padding: 25px;
+}
+
+.educapp-recent-doc-card {
+    background: white;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    box-shadow: var(--box-shadow);
+    transition: all var(--transition-speed);
+}
+
+.educapp-recent-doc-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+.educapp-recent-doc-thumbnail {
+    height: 160px;
+    background: var(--gray-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.educapp-recent-doc-thumbnail img {
+    max-height: 100%;
+    width: auto;
+}
+
+.educapp-recent-doc-info {
+    padding: 20px;
+}
+
+.educapp-recent-doc-info h4 {
+    margin: 0 0 10px;
+    font-size: 1.1rem;
+    color: var(--text-dark);
+}
+
+.educapp-recent-doc-category {
+    display: inline-block;
+    background: rgba(74, 107, 255, 0.1);
+    color: var(--primary-color);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-bottom: 15px;
+}
+
+.educapp-recent-doc-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: var(--border-radius);
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all var(--transition-speed);
+    text-decoration: none;
+}
+
+.educapp-recent-doc-link:hover {
+    background-color: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: var(--box-shadow);
+}
+
+/* === Biblioteca === */
+.educapp-docs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+.educapp-category-section {
+    margin-bottom: 30px;
+}
+
+.educapp-category-section h4 {
+    padding: 15px 20px 10px;
+    color: var(--text-dark);
+    font-size: 1.1rem;
+    border-bottom: 1px solid var(--gray-light);
+}
+
+/* === Corrección para botones en biblioteca === */
+.educapp-doc-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background-color: var(--primary-color);
+    color: white !important;
+    border-radius: var(--border-radius);
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all var(--transition-speed);
+    margin-top: 15px;
+    text-decoration: none !important;
+}
+
+.educapp-doc-link:hover {
+    background-color: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: var(--box-shadow);
+}
+.educapp-doc-link i {
+    font-size: 0.9rem;
+}
+
+/* === Visualización de Documento === */
+.educapp-document-viewer {
+    padding: 20px;
+}
+
+.educapp-document-header {
+    margin-bottom: 20px;
+}
+
+.educapp-document-header h2 {
+    color: var(--text-dark);
+    margin-bottom: 10px;
+}
+
+.educapp-document-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    color: var(--gray-medium);
+    font-size: 0.9rem;
+}
+
+.educapp-document-actions {
+    margin: 20px 0;
+    display: flex;
+    gap: 15px;
+}
+
+.educapp-document-content {
+    margin: 30px 0;
+}
+
+.educapp-document-iframe {
+    width: 100%;
+    height: 600px;
+    border: 1px solid var(--gray-light);
+    border-radius: var(--border-radius);
+}
+
+.educapp-document-preview {
+    position: relative;
+    text-align: center;
+}
+
+.educapp-preview-img {
+    max-width: 100%;
+    max-height: 500px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+}
+
+.educapp-preview-watermark {
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    right: 0;
+    background: rgba(255,255,255,0.8);
+    padding: 15px;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.educapp-document-description {
+    margin: 40px 0;
+    padding: 20px;
+    background: var(--gray-light);
+    border-radius: var(--border-radius);
+}
+
+.educapp-document-description h3 {
+    margin-bottom: 15px;
+    color: var(--text-dark);
+}
+
+.educapp-document-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.educapp-detail-card {
+    background: white;
+    padding: 20px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+}
+
+.educapp-detail-card h4 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-dark);
+}
+
+.educapp-detail-card ul {
+    list-style: none;
+    padding: 0;
+}
+
+.educapp-detail-card li {
+    margin-bottom: 10px;
+}
+
+.educapp-detail-card li strong {
+    display: inline-block;
+    width: 80px;
+    color: var(--gray-medium);
+}
+
+/* === Pago === */
+.payment-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 30px;
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+}
+
+.payment-container h2 {
+    margin-bottom: 30px;
+    color: var(--text-dark);
+    text-align: center;
+}
+
+.document-info {
+    background: var(--gray-light);
+    padding: 20px;
+    border-radius: var(--border-radius);
+    margin-bottom: 30px;
+}
+
+.document-info h3 {
+    margin: 0 0 10px;
+    color: var(--text-dark);
+}
+
+.document-info .price {
+    font-weight: 600;
+    color: var(--primary-color);
+    font-size: 1.1rem;
+    margin-top: 10px;
+}
+
+.payment-form {
+    display: grid;
+    gap: 20px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid var(--gray-light);
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+    transition: all var(--transition-speed);
+}
+
+.form-group input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(74, 107, 255, 0.1);
+    outline: none;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+/* === Transacciones === */
+.educapp-transactions-table {
+    width: 100%;
+    padding: 20px;
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    margin-top: 20px;
+}
+
+.educapp-transactions-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.educapp-transactions-table th, 
+.educapp-transactions-table td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid var(--gray-light);
+}
+
+.educapp-transactions-table th {
+    background-color: var(--primary-color);
+    color: white;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+}
+
+.educapp-transactions-table tr:last-child td {
+    border-bottom: none;
+}
+
+.educapp-transactions-table tr:hover {
+    background-color: rgba(74, 107, 255, 0.05);
+}
+/* === Perfil === */
+.educapp-form-container {
+    padding: 30px;
+}
+
+.educapp-form-container h3 {
+    margin-top: 0;
+    margin-bottom: 25px;
+    color: var(--text-dark);
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .educapp-form-group {
@@ -280,42 +605,21 @@ body {
     margin-bottom: 8px;
     font-weight: 600;
     color: var(--text-dark);
-    font-size: 0.95rem;
 }
 
-.educapp-form-group input[type="text"],
-.educapp-form-group input[type="number"],
-.educapp-form-group input[type="email"],
-.educapp-form-group input[type="password"],
-.educapp-form-group input[type="file"],
-.educapp-form-group select,
-.educapp-form-group textarea {
+.educapp-form-group input {
     width: 100%;
-    padding: 10px 15px;
-    border: 1px solid #ddd;
+    padding: 12px 15px;
+    border: 1px solid var(--gray-light);
     border-radius: var(--border-radius);
-    font-size: 0.95rem;
+    font-size: 1rem;
     transition: all var(--transition-speed);
 }
 
-.educapp-form-group input:focus,
-.educapp-form-group select:focus,
-.educapp-form-group textarea:focus {
+.educapp-form-group input:focus {
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+    box-shadow: 0 0 0 3px rgba(74, 107, 255, 0.1);
     outline: none;
-}
-
-.educapp-form-group textarea {
-    min-height: 120px;
-    resize: vertical;
-}
-
-.educapp-hint {
-    display: block;
-    margin-top: 5px;
-    font-size: 0.8rem;
-    color: #6c757d;
 }
 
 .educapp-form-actions {
@@ -324,15 +628,12 @@ body {
     margin-top: 30px;
 }
 
-/* ============================================ */
-/* BOTONES                                      */
-/* ============================================ */
 .educapp-submit-btn {
     background: var(--primary-color);
     color: white;
     border: none;
     border-radius: var(--border-radius);
-    padding: 12px 20px;
+    padding: 12px 25px;
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
@@ -344,21 +645,16 @@ body {
 }
 
 .educapp-submit-btn:hover {
-    background: var(--secondary-color);
+    background: var(--primary-dark);
     transform: translateY(-2px);
 }
 
-.educapp-submit-btn.small {
-    padding: 10px 16px;
-    font-size: 0.9rem;
-}
-
 .educapp-cancel-btn {
-    background: #f8f9fa;
-    color: #6c757d;
-    border: 1px solid #ddd;
+    background: var(--gray-light);
+    color: var(--gray-medium);
+    border: none;
     border-radius: var(--border-radius);
-    padding: 12px 20px;
+    padding: 12px 25px;
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
@@ -372,255 +668,10 @@ body {
 
 .educapp-cancel-btn:hover {
     background: #e9ecef;
-    color: #495057;
-}
-
-.educapp-btn-small {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: #f8f9fa;
-    color: #495057;
-    border: none;
-    cursor: pointer;
-    transition: all var(--transition-speed);
-    text-decoration: none;
-    font-size: 0.9rem;
-}
-
-.educapp-btn-small:hover {
-    background: #e9ecef;
-    transform: translateY(-2px);
-}
-
-.educapp-btn-small.success {
-    background: rgba(40, 167, 69, 0.1);
-    color: var(--success-color);
-}
-
-.educapp-btn-small.warning {
-    background: rgba(255, 193, 7, 0.1);
-    color: #ffc107;
-}
-
-.educapp-btn-small.danger {
-    background: rgba(220, 53, 69, 0.1);
-    color: var(--danger-color);
-}
-
-/* Sección de documentos */
-.educapp-documents-section {
-    padding: 0 25px 25px;
-}
-
-.educapp-section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-    gap: 15px;
-    padding: 20px 20px 0;
-}
-
-.educapp-section-header h3 {
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 1.2rem;
     color: var(--text-dark);
 }
 
-.educapp-section-header h3 i {
-    color: var(--primary-color);
-}
-
-/* Botón de acción */
-.educapp-action-btn {
-    background: var(--primary-color);
-    color: white;
-    padding: 8px 16px;
-    border-radius: var(--border-radius);
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 0.9rem;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: all var(--transition-speed);
-    border: none;
-    cursor: pointer;
-    white-space: nowrap;
-}
-
-.educapp-action-btn:hover {
-    background: var(--secondary-color);
-    transform: translateY(-2px);
-}
-
-/* Tabla de documentos */
-.educapp-documents-table {
-    overflow-x: auto;
-    border-radius: var(--border-radius);
-    border: 1px solid #eaeaea;
-    margin: 0 20px 20px;
-}
-
-.educapp-documents-table table {
-    width: 100%;
-    border-collapse: collapse;
-    min-width: 600px;
-}
-
-.educapp-documents-table th, 
-.educapp-documents-table td {
-    padding: 12px 15px;
-    text-align: left;
-    border-bottom: 1px solid #eaeaea;
-}
-
-.educapp-documents-table th {
-    background: #f8f9fa;
-    font-weight: 600;
-    color: var(--text-dark);
-    text-transform: uppercase;
-    font-size: 0.8rem;
-    letter-spacing: 0.5px;
-}
-
-.educapp-documents-table tr:hover {
-    background: rgba(76, 175, 80, 0.03);
-}
-
-.educapp-documents-table td a {
-    color: var(--primary-color);
-    text-decoration: none;
-    font-weight: 500;
-    transition: color 0.2s;
-}
-
-.educapp-documents-table td a:hover {
-    color: var(--secondary-color);
-    text-decoration: underline;
-}
-
-.educapp-actions {
-    display: flex;
-    gap: 8px;
-}
-
-/* Badges */
-.educapp-category-badge {
-    background: rgba(76, 175, 80, 0.1);
-    color: var(--primary-color);
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    display: inline-block;
-}
-
-.educapp-status-badge {
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    display: inline-block;
-}
-
-.educapp-status-badge.published {
-    background: rgba(40, 167, 69, 0.1);
-    color: var(--success-color);
-}
-
-.educapp-status-badge.draft {
-    background: rgba(108, 117, 125, 0.1);
-    color: #6c757d;
-}
-
-/* Ganancias */
-.educapp-earnings {
-    font-weight: 600;
-    color: #28a745;
-}
-
-/* Mensaje sin documentos */
-.educapp-no-documents {
-    text-align: center;
-    padding: 30px;
-    color: #6c757d;
-}
-
-.educapp-no-documents i {
-    margin-right: 8px;
-    color: var(--primary-color);
-}
-
-.educapp-alert {
-    padding: 12px 15px;
-    border-radius: var(--border-radius);
-    margin-bottom: 20px;
-    font-size: 0.95rem;
-}
-
-.educapp-alert-success {
-    background-color: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
-}
-
-.educapp-alert-error {
-    background-color: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
-}
-
-/* Inputs de tipo file */
-.educapp-form-group input[type="file"] {
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    background: #f8f9fa;
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
-.educapp-form-group input[type="file"]::file-selector-button {
-    padding: 8px 12px;
-    background: var(--primary-color);
-    color: white;
-    border: none;
-    border-radius: 4px;
-    margin-right: 12px;
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
-.educapp-form-group input[type="file"]::file-selector-button:hover {
-    background: var(--secondary-color);
-}
-
-.educapp-form-group input[type="file"]:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
-}
-
-.educapp-file-selected {
-    display: inline-block;
-    margin-top: 8px;
-    font-size: 0.85rem;
-    color: var(--primary-color);
-    font-weight: 500;
-}
-
-/* ============================================ */
-/* RESPONSIVE                                   */
-/* ============================================ */
+/* === Responsive === */
 @media (max-width: 992px) {
     .educapp-sidebar {
         width: 240px;
@@ -647,50 +698,67 @@ body {
         grid-template-columns: 1fr;
     }
     
-    .educapp-section-header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-    
-    .educapp-action-btn {
-        width: 100%;
-        justify-content: center;
+    .form-row {
+        grid-template-columns: 1fr;
     }
     
     .educapp-form-actions {
         flex-direction: column;
     }
     
-    .educapp-form-actions .educapp-submit-btn,
-    .educapp-form-actions .educapp-cancel-btn {
+    .educapp-submit-btn,
+    .educapp-cancel-btn {
         width: 100%;
-    }
-    
-    .educapp-user-section {
-        padding: 15px;
-    }
-    
-    .educapp-user-avatar {
-        font-size: 1.8rem;
     }
 }
 
 @media (max-width: 480px) {
-    .educapp-documents-table th, 
-    .educapp-documents-table td {
-        padding: 8px 10px;
-        font-size: 0.85rem;
+    .educapp-document-iframe {
+        height: 400px;
     }
     
-    .educapp-stat-amount {
-        font-size: 1.8rem;
+    .educapp-document-meta {
+        flex-direction: column;
+        gap: 5px;
     }
     
-    .educapp-user-details strong {
-        font-size: 0.85rem;
+    .educapp-document-actions {
+        flex-direction: column;
+    }
+}
+
+/* === Ajustes para mensajes sin contenido === */
+.educapp-no-content {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--gray-medium);
+    font-size: 1rem;
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    margin: 20px;
+}
+
+.educapp-no-content i {
+    font-size: 2rem;
+    color: var(--primary-color);
+    margin-bottom: 15px;
+    display: block;
+}
+
+/* === Ajustes responsivos adicionales === */
+@media (max-width: 768px) {
+    .educapp-transactions-table {
+        padding: 15px;
     }
     
-    .educapp-user-details small {
-        font-size: 0.75rem;
+    .educapp-transactions-table th, 
+    .educapp-transactions-table td {
+        padding: 12px 10px;
+        font-size: 0.9rem;
+    }
+    
+    .educapp-recent-docs {
+        grid-template-columns: 1fr;
     }
 }
